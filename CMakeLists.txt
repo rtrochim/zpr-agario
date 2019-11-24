@@ -28,6 +28,13 @@ add_compile_options(-Wall -Werror -Wextra -pedantic)
 
 find_package(Threads)
 
+find_program(PYTHON_BIN NAMES python python3 DOC "Python executable")
+
+if (NOT PYTHON_BIN)
+    message(SEND_ERROR "Python not found")
+else()
+    message(STATUS "Using Python: '${PYTHON_BIN}'")
+endif ()
 
 if (DEFLATE_SUPPORT)
     find_package(ZLIB REQUIRED)
