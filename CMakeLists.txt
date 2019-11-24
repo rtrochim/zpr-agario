@@ -28,6 +28,15 @@ add_compile_options(-Wall -Werror -Wextra -pedantic)
 
 find_package(Threads)
 
+find_package(SQLite3)
+
+if (NOT SQLITE3_FOUND)
+    message(SEND_ERROR "Sqlite3 not found")
+else()
+    message(STATUS "Sqlite3 found")
+endif ()
+
+
 find_program(PYTHON_BIN NAMES python python3 DOC "Python executable")
 
 if (NOT PYTHON_BIN)

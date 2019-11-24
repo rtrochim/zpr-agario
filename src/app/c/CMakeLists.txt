@@ -1,6 +1,8 @@
 macro(add_app _NAME)
     add_executable(${_NAME} ${_NAME}.cpp)
     target_link_libraries(${_NAME} seasocks "${ZLIB_LIBRARIES}")
+    include_directories(${SQLITE3_INCLUDE_DIRS})
+    target_link_libraries(${_NAME} sqlite3 "${SQLITE3_LIBRARIES}")
 endmacro()
 
 

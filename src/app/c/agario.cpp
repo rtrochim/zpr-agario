@@ -16,6 +16,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <sqlite3.h>
 
 using namespace seasocks;
 
@@ -75,6 +76,14 @@ private:
 
 int main(int /*argc*/, const char* /*argv*/[]) {
     auto logger = std::make_shared<PrintfLogger>(Logger::Level::Debug);
+
+    sqlite3 *db;
+
+    if(sqlite3_open("../../../../agario.db", &db)){
+        printf("Cannot open database: %s", sqlite3_errmsg(db));
+    }
+
+    sqlite3_close(db);
 
     Server server(logger);
 
