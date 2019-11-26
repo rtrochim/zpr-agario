@@ -17,25 +17,40 @@
 #include <set>
 #include <sstream>
 #include <string>
-#include <sqlite3.h>
+
+#include "lib/json.hpp"
+#include "lib/sqlite_modern_cpp.h"
 
 using namespace seasocks;
+using json = nlohmann::json;
+using database = sqlite::database;
 
-class MyHandler : public WebSocket::Handler {
+class BasicHandler : public WebSocket::Handler {
 public:
-    explicit MyHandler(Server* server)
-            : _server(server){}
+    explicit BasicHandler(Server* server, database &db)
+            : _server(server), _db(db){}
 
     void onConnect(WebSocket* connection) override {
         _connections.insert(connection);
-        connection->send("Hello there");
+        connection->send("WebSocket connected");
         std::cout << "Connected: " << connection->getRequestUri()
                   << " : " << formatAddress(connection->getRemoteAddress())
                   << "\nCredentials: " << *(connection->credentials()) << "\n";
     }
 
     void onData(WebSocket* connection, const char* data) override {
-        printf("===============GOT DATA:%s", data);
+        auto json = json::parse(data);
+        if(json["messageType"] == "login"){
+            _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
+               << std::string(json["socketId"])
+               << std::string(json["name"])
+               << 1;
+
+        } else if (json["messageType"] == "update"){
+
+        }
+
+
     }
 
     void onDisconnect(WebSocket* connection) override {
@@ -47,21 +62,28 @@ public:
 private:
     std::set<WebSocket*> _connections;
     Server* _server;
+    database _db;
 };
 
 int main(int /*argc*/, const char* /*argv*/[]) {
 
-    sqlite3 *db;
-    if(sqlite3_open("../../../../agario.db", &db)){
-        printf("Cannot open database: %s", sqlite3_errmsg(db));
-    }
+    database db("../../../../agario.db");
+
+
 
     auto logger = std::make_shared<PrintfLogger>(Logger::Level::Debug);
     Server server(logger);
 
-    auto handler = std::make_shared<MyHandler>(&server);
-    server.addWebSocketHandler("/ws", handler);
-    server.serve("src/agario", 3000);
-    sqlite3_close(db);
+    auto handler = std::make_shared<BasicHandler>(&server, db);
+    server.addWebSocketHandler("/", handler);
+
+    try {
+        server.serve("src/agario", 3000);
+    }
+    catch (sqlite::sqlite_exception& e) {
+        std::cerr  << e.get_code() << ": " << e.what() << " during "
+                   << e.get_sql() << std::endl;
+    }
+
     return 0;
 }

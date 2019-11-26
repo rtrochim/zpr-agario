@@ -59,6 +59,8 @@ set(SEASOCKS_SOURCE_FILES
         util/Json.cpp
         util/PathHandler.cpp
         util/RootPageHandler.cpp
+        lib/json.hpp
+        lib/sqlite_modern_cpp.h
         )
 
 if (DEFLATE_SUPPORT)

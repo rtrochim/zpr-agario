@@ -17,11 +17,14 @@ function setup() {
   const HEIGHT = window.innerHeight <= MAX_HEIGHT - 75 ? window.innerHeight - 75 : MAX_HEIGHT;
 
   createCanvas(WIDTH, HEIGHT);
-  // Start a socket connection to the server
-  // Some day we would run this server somewhere else
-  socket = new WebSocket('ws://' + document.location.host + '/ws');
-  printScore();
 
+  socket = new WebSocket("ws://localhost:3000/");
+  socket.onmessage = (event) => {
+    console.log(`[message] Data received from server: ${event.data}`);
+    // blobs = data; // @TODO
+  };
+
+  printScore();
   blob = new Blob(random(width), random(height), random(8, 24));
 
   for (let i = 0; i < 200; i++) {
@@ -30,17 +33,17 @@ function setup() {
     gameBlobs[i] = new Blob(x, y, 8);
   }
 
-  // Make a little object with  and y
   const data = {
     x: blob.pos.x,
     y: blob.pos.y,
     r: blob.r
   };
 
-  socket.send(data);
-  socket.onmessage = (data) => {
-      blobs = data;
-  }
+  socket.onopen = (e) => {
+    console.log("[open] Connection established");
+    console.log("Sending to server");
+    socket.send(JSON.stringify(data));
+  };
 }
 
 function draw() {
@@ -84,7 +87,7 @@ function draw() {
     blob.update();
   }
 
-  // blob.constrain();
+  blob.constrain();
 
   const data = {
     x: blob.pos.x,
@@ -92,5 +95,6 @@ function draw() {
     r: blob.r
   };
 
-  socket.send(data);
+  // @TODO structure message type/message content
+  // socket.send('update', data);
 }
