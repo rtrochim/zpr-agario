@@ -10,7 +10,7 @@ let score = 0;
 
 const printScore = () => {
   document.getElementById('score').innerHTML = 'Your score: ' + score;
-}
+};
 
 function setup() {
   const WIDTH = window.innerWidth <= MAX_WIDTH - 50 ? window.innerWidth - 50 : MAX_WIDTH;
@@ -19,7 +19,7 @@ function setup() {
   createCanvas(WIDTH, HEIGHT);
   // Start a socket connection to the server
   // Some day we would run this server somewhere else
-  socket = io.connect('http://localhost:3000');
+  socket = new WebSocket('ws://' + document.location.host + '/ws');
   printScore();
 
   blob = new Blob(random(width), random(height), random(8, 24));
@@ -37,10 +37,10 @@ function setup() {
     r: blob.r
   };
 
-  socket.emit('start', data);
-  socket.on('heartbeat', (data) => {
+  socket.send(data);
+  socket.onmessage = (data) => {
       blobs = data;
-  });
+  }
 }
 
 function draw() {
@@ -92,5 +92,5 @@ function draw() {
     r: blob.r
   };
 
-  socket.emit('update', data);
+  socket.send(data);
 }
