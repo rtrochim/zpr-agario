@@ -17,9 +17,11 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <zconf.h>
 
 #include "lib/json.hpp"
 #include "lib/sqlite_modern_cpp.h"
+#include "Blob.h"
 
 using namespace seasocks;
 using json = nlohmann::json;
@@ -42,15 +44,25 @@ public:
         auto json = json::parse(data);
         if(json["messageType"] == "login"){
             _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
-               << std::string(json["socketId"])
-               << std::string(json["name"])
+               << std::string(json["id"])
+               << std::string("testname")
                << 1;
-
+            _blobs.push_back(*(new Blob(std::string(json["id"]), std::string(json["x"]), std::string(json["y"]),std::string(json["r"]))));
+            connection->send("Logged in");
         } else if (json["messageType"] == "update"){
-
+            for(auto &blob : _blobs){
+                if(blob.getId() == json["id"]){
+                    blob.setX(std::string(json["x"]));
+                    blob.setY(std::string(json["y"]));
+                    blob.setRadius(std::string(json["r"]));
+                }
+            }
+            auto response = json::array();;
+            for(auto &blob : _blobs){
+                response.push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+            }
+            connection->send(response.dump());
         }
-
-
     }
 
     void onDisconnect(WebSocket* connection) override {
@@ -63,6 +75,7 @@ private:
     std::set<WebSocket*> _connections;
     Server* _server;
     database _db;
+    std::vector<Blob> _blobs;
 };
 
 int main(int /*argc*/, const char* /*argv*/[]) {

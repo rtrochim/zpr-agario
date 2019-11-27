@@ -61,12 +61,13 @@ set(SEASOCKS_SOURCE_FILES
         util/RootPageHandler.cpp
         lib/json.hpp
         lib/sqlite_modern_cpp.h
+        ../../app/c/Blob.cpp
         )
 
 if (DEFLATE_SUPPORT)
     set(SEASOCKS_SOURCE_FILES ${SEASOCKS_SOURCE_FILES} seasocks/ZlibContext.cpp)
 else()
-    set(SEASOCKS_SOURCE_FILES ${SEASOCKS_SOURCE_FILES} seasocks/ZlibContextDisabled.cpp)
+    set(SEASOCKS_SOURCE_FILES ${SEASOCKS_SOURCE_FILES} seasocks/ZlibContextDisabled.cpp ../../app/c/Blob.cpp ../../app/c/Blob.h)
 endif()
 
 add_library(seasocks_obj OBJECT ${SEASOCKS_SOURCE_FILES})

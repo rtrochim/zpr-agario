@@ -7,6 +7,7 @@ let blobs = [];
 let zoom = 1;
 let gameBlobs = [];
 let score = 0;
+let socketId = Math.round((Math.random() * 100)).toString();
 
 const printScore = () => {
   document.getElementById('score').innerHTML = 'Your score: ' + score;
@@ -20,8 +21,7 @@ function setup() {
 
   socket = new WebSocket("ws://localhost:3000/");
   socket.onmessage = (event) => {
-    console.log(`[message] Data received from server: ${event.data}`);
-    // blobs = data; // @TODO
+    blobs = JSON.parse(event.data);
   };
 
   printScore();
@@ -33,10 +33,12 @@ function setup() {
     gameBlobs[i] = new Blob(x, y, 8);
   }
 
-  const data = {
-    x: blob.pos.x,
-    y: blob.pos.y,
-    r: blob.r
+  let data = {
+    messageType: "login",
+    id: socketId,
+    x: blob.pos.x.toString(),
+    y: blob.pos.y.toString(),
+    r: blob.r.toString()
   };
 
   socket.onopen = (e) => {
@@ -58,7 +60,7 @@ function draw() {
   for (let i = blobs.length - 1; i >= 0; i--) {
     const { id, x, y, r } = blobs[i];
 
-    if (id !== socket.id) {
+    if (id !== socketId) {
       fill(0, 0, 255);
       ellipse(x, y, r * 2, r * 2);
 
@@ -89,12 +91,15 @@ function draw() {
 
   blob.constrain();
 
-  const data = {
-    x: blob.pos.x,
-    y: blob.pos.y,
-    r: blob.r
+  let data = {
+    messageType: "update",
+    id: socketId,
+    x: blob.pos.x.toString(),
+    y: blob.pos.y.toString(),
+    r: blob.r.toString()
   };
 
-  // @TODO structure message type/message content
-  // socket.send('update', data);
+  if(socket.readyState === WebSocket.OPEN){
+    setInterval(socket.send(JSON.stringify(data)),33 );
+  }
 }
