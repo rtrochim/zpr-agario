@@ -1,0 +1,2 @@
+Należy ruchomić skrypt build.sh, powinien zakończyć się komunikatem, że serwer słucha na tym i tym porcie.
+Należy uruchomić przeglądarkę i wpisać podany adres. Połączy się z lokalnym serwerm i uruchomi grę.
