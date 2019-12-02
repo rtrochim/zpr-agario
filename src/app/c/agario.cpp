@@ -43,10 +43,10 @@ public:
     void onData(WebSocket* connection, const char* data) override {
         auto json = json::parse(data);
         if(json["messageType"] == "login"){
-            _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
-               << std::string(json["id"])
-               << std::string("testname")
-               << 1;
+//            _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
+//               << std::string(json["id"])
+//               << std::string("testname")
+//               << 1;
             _blobs.push_back(*(new Blob(std::string(json["id"]), std::string(json["x"]), std::string(json["y"]),std::string(json["r"]))));
             connection->send("Logged in");
         } else if (json["messageType"] == "update"){
