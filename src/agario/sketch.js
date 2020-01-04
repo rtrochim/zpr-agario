@@ -14,10 +14,10 @@ const printScore = () => {
 };
 
 function setup() {
-  const WIDTH = window.innerWidth <= MAX_WIDTH - 50 ? window.innerWidth - 50 : MAX_WIDTH;
-  const HEIGHT = window.innerHeight <= MAX_HEIGHT - 75 ? window.innerHeight - 75 : MAX_HEIGHT;
+  // const WIDTH = window.innerWidth <= MAX_WIDTH - 50 ? window.innerWidth - 50 : MAX_WIDTH;
+  // const HEIGHT = window.innerHeight <= MAX_HEIGHT - 75 ? window.innerHeight - 75 : MAX_HEIGHT;
 
-  createCanvas(WIDTH, HEIGHT);
+  createCanvas(MAX_WIDTH, MAX_HEIGHT);
 
   socket = new WebSocket("ws://localhost:3000/");
   socket.onmessage = (event) => {
@@ -25,6 +25,12 @@ function setup() {
     switch (data.messageType) {
       case 'updateBlobs':
         blobs = data.blobs;
+        gameBlobs = data.gameBlobs.map(item => new Blob(parseInt(item.x), parseInt(item.y), parseInt(item.r)));
+        break;
+      case 'loggedIn':
+        console.log('Logged in');
+        gameBlobs = data.gameBlobs.map(item => new Blob(parseInt(item.x), parseInt(item.y), parseInt(item.r)));
+        console.log('gameBlobs', gameBlobs);
         break;
       default:
         console.log('Unrecognized message');
@@ -36,18 +42,14 @@ function setup() {
   printScore();
   blob = new Blob(random(width), random(height), random(8, 24));
 
-  for (let i = 0; i < 200; i++) {
-    const x = random(-width,width);
-    const y = random(-height,height);
-    gameBlobs[i] = new Blob(x, y, 8);
-  }
-
   let data = {
     messageType: "login",
     id: socketId,
     x: blob.pos.x.toString(),
     y: blob.pos.y.toString(),
-    r: blob.r.toString()
+    r: blob.r.toString(),
+    height: MAX_HEIGHT,
+    width: MAX_WIDTH
   };
 
   socket.onopen = (e) => {
@@ -56,6 +58,8 @@ function setup() {
     socket.send(JSON.stringify(data));
   };
 }
+
+let intervalDate = new Date();
 
 function draw() {
   background(0);
@@ -85,9 +89,15 @@ function draw() {
         score += 1;
         printScore();
         gameBlobs.splice(i, 1);
-        if (gameBlobs.length < 10) {
-          gameBlobs.push(new Blob(random(width), random(height), 8));
-        }
+        let data = {
+          messageType: "gameBlobEat",
+          id: socketId,
+          blobId: i,
+        };
+        socket.send(JSON.stringify(data));
+        // if (gameBlobs.length < 10) {
+        //   gameBlobs.push(new Blob(random(width), random(height), 8));
+        // }
       }
     }
   }
@@ -98,7 +108,7 @@ function draw() {
     blob.update();
   }
 
-  blob.constrain();
+  //blob.constrain();
 
   let data = {
     messageType: "update",
@@ -108,7 +118,8 @@ function draw() {
     r: blob.r.toString()
   };
 
-  if(socket.readyState === WebSocket.OPEN){
-    setInterval(socket.send(JSON.stringify(data)), 2000);
+  if (socket.readyState === WebSocket.OPEN && new Date().getTime() - intervalDate.getTime() > 50) {
+    socket.send(JSON.stringify(data));
+    intervalDate = new Date();
   }
 }

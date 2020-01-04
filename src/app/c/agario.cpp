@@ -41,13 +41,31 @@ public:
 
     void onData(WebSocket* connection, const char* data) override {
         auto payload= json::parse(data);
+        json response;
         if(payload["messageType"] == "login"){
             _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
                << std::string(payload["id"])
                << std::string("testname")
                << 1;
             _blobs.push_back(*(new Blob(std::string(payload["id"]), std::string(payload["x"]), std::string(payload["y"]), std::string(payload["r"]))));
-            connection->send("Logged in");
+            response["messageType"] = "loggedIn";
+            if (_gameBlobs.empty()) {
+                int width = std::stoi(payload["width"].dump());
+                int height = std::stoi(payload["height"].dump());
+                response["gameBlobs"] = json::array();
+                for (int i = 0; i < 500; i++) {
+                    std::string posX = std::to_string(-width + (std::rand() % (2*width + 1)));
+                    std::string posY = std::to_string(-height + (std::rand() % (2*height + 1)));
+                    _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "8")));
+                }
+            }
+            for(auto &gameBlob : _gameBlobs){
+                response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
+            }
+            connection->send(response.dump());
+        } else if (payload["messageType"] == "gameBlobEat"){
+            int blobId = payload["blobId"];
+            _gameBlobs.erase(_gameBlobs.begin() + blobId);
         } else if (payload["messageType"] == "update"){
             for(auto &blob : _blobs){
                 if(blob.getId() == payload["id"]){
@@ -56,12 +74,12 @@ public:
                     blob.setRadius(std::string(payload["r"]));
                 }
             }
-            json response;
-            auto blobs = json::array();
             for(auto &blob : _blobs){
-                blobs.push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
             }
-            response["blobs"] = blobs;
+            for(auto &gameBlob : _gameBlobs){
+                response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
+            }
             response["messageType"] = "updateBlobs";
             connection->send(response.dump());
         }
@@ -78,6 +96,7 @@ private:
     Server* _server;
     database _db;
     std::vector<Blob> _blobs;
+    std::vector<Blob> _gameBlobs;
 };
 
 int main(int /*argc*/, const char* /*argv*/[]) {
