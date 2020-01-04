@@ -5,3 +5,5 @@
 gdb.txt
 /cmake-*
 .idea/
+.floo
+.flooignore

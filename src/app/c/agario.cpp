@@ -34,33 +34,35 @@ public:
 
     void onConnect(WebSocket* connection) override {
         _connections.insert(connection);
-        connection->send("WebSocket connected");
         std::cout << "Connected: " << connection->getRequestUri()
                   << " : " << formatAddress(connection->getRemoteAddress())
                   << "\nCredentials: " << *(connection->credentials()) << "\n";
     }
 
     void onData(WebSocket* connection, const char* data) override {
-        auto json = json::parse(data);
-        if(json["messageType"] == "login"){
-//            _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
-//               << std::string(json["id"])
-//               << std::string("testname")
-//               << 1;
-            _blobs.push_back(*(new Blob(std::string(json["id"]), std::string(json["x"]), std::string(json["y"]),std::string(json["r"]))));
+        auto payload= json::parse(data);
+        if(payload["messageType"] == "login"){
+            _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
+               << std::string(payload["id"])
+               << std::string("testname")
+               << 1;
+            _blobs.push_back(*(new Blob(std::string(payload["id"]), std::string(payload["x"]), std::string(payload["y"]), std::string(payload["r"]))));
             connection->send("Logged in");
-        } else if (json["messageType"] == "update"){
+        } else if (payload["messageType"] == "update"){
             for(auto &blob : _blobs){
-                if(blob.getId() == json["id"]){
-                    blob.setX(std::string(json["x"]));
-                    blob.setY(std::string(json["y"]));
-                    blob.setRadius(std::string(json["r"]));
+                if(blob.getId() == payload["id"]){
+                    blob.setX(std::string(payload["x"]));
+                    blob.setY(std::string(payload["y"]));
+                    blob.setRadius(std::string(payload["r"]));
                 }
             }
-            auto response = json::array();;
+            json response;
+            auto blobs = json::array();
             for(auto &blob : _blobs){
-                response.push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+                blobs.push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
             }
+            response["blobs"] = blobs;
+            response["messageType"] = "updateBlobs";
             connection->send(response.dump());
         }
     }

@@ -21,7 +21,16 @@ function setup() {
 
   socket = new WebSocket("ws://localhost:3000/");
   socket.onmessage = (event) => {
-    blobs = JSON.parse(event.data);
+    data = JSON.parse(event.data);
+    switch (data.messageType) {
+      case 'updateBlobs':
+        blobs = data.blobs;
+        break;
+      default:
+        console.log('Unrecognized message');
+        console.log(data);
+        break;
+    }
   };
 
   printScore();
@@ -100,6 +109,6 @@ function draw() {
   };
 
   if(socket.readyState === WebSocket.OPEN){
-    setInterval(socket.send(JSON.stringify(data)),33 );
+    setInterval(socket.send(JSON.stringify(data)), 2000);
   }
 }
