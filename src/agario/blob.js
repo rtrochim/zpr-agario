@@ -4,10 +4,10 @@ function Blob(x, y, r) {
   this.vel = createVector(0, 0);
 
   this.update = () => {
-    const newvel = createVector(mouseX - width / 2, mouseY - height / 2);
-    newvel.div(50);
-    newvel.setMag(3);
-    newvel.limit(3);
+    const newvel = createVector((mouseX - width / 2), (mouseY - height / 2));
+    // newvel.div(5);
+    // newvel.setMag(3/);
+    newvel.limit(3 - (this.r/100));
     this.vel.lerp(newvel, 0.2);
     this.pos.add(this.vel);
   };
@@ -15,9 +15,8 @@ function Blob(x, y, r) {
   this.eats = (other) => {
     const d = p5.Vector.dist(this.pos, other.pos);
     if (d < this.r + other.r) {
-      const sum = PI * this.r * this.r + PI * other.r * other.r;
+      const sum = PI * this.r * this.r + PI * other.r/2 * other.r/2;
       this.r = sqrt(sum / PI);
-      //this.r += other.r;
       return true;
     } else {
       return false;

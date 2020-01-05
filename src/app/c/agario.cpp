@@ -18,6 +18,7 @@
 #include <sstream>
 #include <string>
 #include <zconf.h>
+#include <math.h>
 
 #include "lib/json.hpp"
 #include "lib/sqlite_modern_cpp.h"
@@ -56,17 +57,25 @@ public:
                 for (int i = 0; i < 500; i++) {
                     std::string posX = std::to_string(-width + (std::rand() % (2*width + 1)));
                     std::string posY = std::to_string(-height + (std::rand() % (2*height + 1)));
-                    _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "8")));
+                    _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "4")));
                 }
             }
             for(auto &gameBlob : _gameBlobs){
                 response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
             }
             connection->send(response.dump());
-        } else if (payload["messageType"] == "gameBlobEat"){
-            int blobId = payload["blobId"];
-            _gameBlobs.erase(_gameBlobs.begin() + blobId);
-        } else if (payload["messageType"] == "update"){
+        } else if (payload["messageType"] == "gameBlobEat") {
+            int gameBlobId = payload["gameBlobId"];
+            std::string blobId = payload["blobId"];
+            auto it = std::find_if(_blobs.begin(), _blobs.end(), [&blobId](Blob& blob) { return blob.getId() == blobId; });
+            Blob userBlob = _blobs[it - _blobs.begin()];
+            Blob gameBlob = _gameBlobs[gameBlobId];
+            double distance = sqrt(pow(stof(userBlob.getX()) - stof(gameBlob.getX()), 2) + pow(stof(userBlob.getY()) - stof(gameBlob.getY()), 2));
+            if (distance < stof(userBlob.getRadius()) + stof(gameBlob.getRadius())) {
+                _db << "update players set score = score + 1 where socketId = ?;" << blobId;
+                _gameBlobs.erase(_gameBlobs.begin() + gameBlobId);
+            }
+        } else if (payload["messageType"] == "update") {
             for(auto &blob : _blobs){
                 if(blob.getId() == payload["id"]){
                     blob.setX(std::string(payload["x"]));
@@ -81,6 +90,10 @@ public:
                 response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
             }
             response["messageType"] = "updateBlobs";
+            int score;
+            std::string socketId = payload["id"];
+            _db << "select score from players where socketId = ?" << stoi(socketId) >> score;
+            response["score"] = score;
             connection->send(response.dump());
         }
     }

@@ -4,7 +4,9 @@
 
 #include "Blob.h"
 
-Blob::Blob(std::basic_string<char> id, std::basic_string<char> x, std::basic_string<char> y, std::basic_string<char> radius) : _id(id), _x(x), _y(y), _radius(radius){}
+#include <utility>
+
+Blob::Blob(std::basic_string<char> id, std::basic_string<char> x, std::basic_string<char> y, std::basic_string<char> radius) : _id(std::move(id)), _x(std::move(x)), _y(std::move(y)), _radius(std::move(radius)){}
 
 std::string &Blob::getId(){
     return _id;

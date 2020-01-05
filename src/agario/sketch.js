@@ -24,8 +24,10 @@ function setup() {
     data = JSON.parse(event.data);
     switch (data.messageType) {
       case 'updateBlobs':
+        score = data.score;
         blobs = data.blobs;
         gameBlobs = data.gameBlobs.map(item => new Blob(parseInt(item.x), parseInt(item.y), parseInt(item.r)));
+        printScore();
         break;
       case 'loggedIn':
         console.log('Logged in');
@@ -86,19 +88,16 @@ function draw() {
     for (let i = gameBlobs.length-1; i >=0; i--) {
       gameBlobs[i].show();
       if (blob.eats(gameBlobs[i])) {
-        score += 1;
-        printScore();
-        gameBlobs.splice(i, 1);
-        let data = {
-          messageType: "gameBlobEat",
-          id: socketId,
-          blobId: i,
-        };
-        socket.send(JSON.stringify(data));
-        // if (gameBlobs.length < 10) {
-        //   gameBlobs.push(new Blob(random(width), random(height), 8));
-        // }
-      }
+      //   score += 1;
+      //   printScore();
+      // gameBlobs.splice(i, 1);
+      let data = {
+        messageType: "gameBlobEat",
+        blobId: socketId,
+        gameBlobId: i,
+      };
+      socket.send(JSON.stringify(data));
+    }
     }
   }
 
@@ -108,7 +107,7 @@ function draw() {
     blob.update();
   }
 
-  //blob.constrain();
+  // blob.constrain();
 
   let data = {
     messageType: "update",
@@ -118,7 +117,7 @@ function draw() {
     r: blob.r.toString()
   };
 
-  if (socket.readyState === WebSocket.OPEN && new Date().getTime() - intervalDate.getTime() > 50) {
+  if (socket.readyState === WebSocket.OPEN && new Date().getTime() - intervalDate.getTime() > 33) {
     socket.send(JSON.stringify(data));
     intervalDate = new Date();
   }
