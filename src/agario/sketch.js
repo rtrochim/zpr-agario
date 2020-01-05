@@ -8,7 +8,6 @@ let zoom = 1;
 let gameBlobs = [];
 let score = 0;
 let socketId = Math.round((Math.random() * 100)).toString();
-
 const printScore = () => {
   document.getElementById('score').innerHTML = 'Your score: ' + score;
 };
@@ -67,7 +66,7 @@ function draw() {
   background(0);
 
   translate(width / 2, height / 2);
-  var newzoom = 64 / blob.r;
+  let newzoom = 64 / blob.r;
   zoom = lerp(zoom, newzoom, 0.1);
   scale(zoom);
   translate(-blob.pos.x, -blob.pos.y);
@@ -84,22 +83,29 @@ function draw() {
       textSize(4);
       text(id, x, y + r);
     }
+  }
 
-    for (let i = gameBlobs.length-1; i >=0; i--) {
-      gameBlobs[i].show();
-      if (blob.eats(gameBlobs[i])) {
-      //   score += 1;
-      //   printScore();
-      // gameBlobs.splice(i, 1);
-      let data = {
+  for (let i = gameBlobs.length-1; i >=0; i--) {
+    gameBlobs[i].show();
+    if (blob.eats(gameBlobs[i])) {
+      const data = {
         messageType: "gameBlobEat",
         blobId: socketId,
         gameBlobId: i,
       };
+
       socket.send(JSON.stringify(data));
     }
-    }
   }
+
+  // Draw arena walls
+  stroke('white');
+  strokeWeight(4);
+  line(-MAX_WIDTH,MAX_HEIGHT,MAX_WIDTH,MAX_HEIGHT);
+  line(-MAX_WIDTH,-MAX_HEIGHT,MAX_WIDTH,-MAX_HEIGHT);
+  line(MAX_WIDTH,-MAX_HEIGHT,MAX_WIDTH,MAX_HEIGHT);
+  line(-MAX_WIDTH,-MAX_HEIGHT,-MAX_WIDTH,MAX_HEIGHT);
+  noStroke();
 
   blob.show();
 
@@ -107,7 +113,7 @@ function draw() {
     blob.update();
   }
 
-  // blob.constrain();
+  blob.constrain();
 
   let data = {
     messageType: "update",

@@ -24,8 +24,8 @@ function Blob(x, y, r) {
   };
 
   this.constrain = () => {
-    blob.pos.x = constrain(0, -1400, 1400);
-    blob.pos.y = constrain(0, -900, 900);
+    blob.pos.x = constrain(blob.pos.x, -1400, 1400);
+    blob.pos.y = constrain(blob.pos.y, -900, 900);
   };
 
   this.show = () => {

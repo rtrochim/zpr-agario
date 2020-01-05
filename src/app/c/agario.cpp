@@ -53,7 +53,6 @@ public:
             if (_gameBlobs.empty()) {
                 int width = std::stoi(payload["width"].dump());
                 int height = std::stoi(payload["height"].dump());
-                response["gameBlobs"] = json::array();
                 for (int i = 0; i < 500; i++) {
                     std::string posX = std::to_string(-width + (std::rand() % (2*width + 1)));
                     std::string posY = std::to_string(-height + (std::rand() % (2*height + 1)));
