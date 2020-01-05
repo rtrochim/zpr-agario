@@ -1,5 +1,6 @@
 const MAX_WIDTH = 1400;
 const MAX_HEIGHT = 900;
+const REFRESH_RATE = 33;
 
 let socket;
 let blob;
@@ -25,13 +26,11 @@ function setup() {
       case 'updateBlobs':
         score = data.score;
         blobs = data.blobs;
-        gameBlobs = data.gameBlobs.map(item => new Blob(parseInt(item.x), parseInt(item.y), parseInt(item.r)));
+        gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
         printScore();
         break;
       case 'loggedIn':
-        console.log('Logged in');
-        gameBlobs = data.gameBlobs.map(item => new Blob(parseInt(item.x), parseInt(item.y), parseInt(item.r)));
-        console.log('gameBlobs', gameBlobs);
+        gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
         break;
       default:
         console.log('Unrecognized message');
@@ -40,6 +39,14 @@ function setup() {
     }
   };
 
+  window.onunload = () => {
+    const data = {
+      messageType: 'logout',
+      id: socketId,
+    };
+
+    socket.send(JSON.stringify(data));
+  };
   printScore();
   blob = new Blob(random(width), random(height), random(8, 24));
 
@@ -61,6 +68,7 @@ function setup() {
 }
 
 let intervalDate = new Date();
+let gameBlobInterval = new Date();
 
 function draw() {
   background(0);
@@ -75,6 +83,18 @@ function draw() {
     const { id, x, y, r } = blobs[i];
 
     if (id !== socketId) {
+      if (blob.eatsPlayer(new Blob(x, y, r))) {
+        // const data = {
+        //   messageType: 'userBlobEat',
+        //   userBlobId: blobs[i].id,
+        //   id: socketId,
+        // };
+
+        // blobs.splice(i, 1);
+        // socket.send(JSON.stringify(data));
+        // continue;
+      }
+
       fill(0, 0, 255);
       ellipse(x, y, r * 2, r * 2);
 
@@ -92,9 +112,14 @@ function draw() {
         messageType: "gameBlobEat",
         blobId: socketId,
         gameBlobId: i,
+        id: socketId,
       };
 
-      socket.send(JSON.stringify(data));
+      if (new Date().getTime() - gameBlobInterval.getTime() > REFRESH_RATE) {
+        gameBlobs.splice(i, 1);
+        socket.send(JSON.stringify(data));
+        gameBlobInterval = new Date();
+      }
     }
   }
 
@@ -123,7 +148,7 @@ function draw() {
     r: blob.r.toString()
   };
 
-  if (socket.readyState === WebSocket.OPEN && new Date().getTime() - intervalDate.getTime() > 33) {
+  if (socket.readyState === WebSocket.OPEN && new Date().getTime() - intervalDate.getTime() > REFRESH_RATE) {
     socket.send(JSON.stringify(data));
     intervalDate = new Date();
   }

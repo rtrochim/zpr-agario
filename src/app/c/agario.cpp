@@ -18,8 +18,8 @@
 #include <sstream>
 #include <string>
 #include <zconf.h>
-#include <math.h>
-
+#include <cmath>
+#include <map>
 #include "lib/json.hpp"
 #include "lib/sqlite_modern_cpp.h"
 #include "Blob.h"
@@ -48,6 +48,7 @@ public:
                << std::string(payload["id"])
                << std::string("testname")
                << 1;
+            _scores[payload["id"]] = 0;
             _blobs.push_back(*(new Blob(std::string(payload["id"]), std::string(payload["x"]), std::string(payload["y"]), std::string(payload["r"]))));
             response["messageType"] = "loggedIn";
             if (_gameBlobs.empty()) {
@@ -66,34 +67,31 @@ public:
         } else if (payload["messageType"] == "gameBlobEat") {
             int gameBlobId = payload["gameBlobId"];
             std::string blobId = payload["blobId"];
-            auto it = std::find_if(_blobs.begin(), _blobs.end(), [&blobId](Blob& blob) { return blob.getId() == blobId; });
-            Blob userBlob = _blobs[it - _blobs.begin()];
-            Blob gameBlob = _gameBlobs[gameBlobId];
-            double distance = sqrt(pow(stof(userBlob.getX()) - stof(gameBlob.getX()), 2) + pow(stof(userBlob.getY()) - stof(gameBlob.getY()), 2));
-            if (distance < stof(userBlob.getRadius()) + stof(gameBlob.getRadius())) {
-                _db << "update players set score = score + 1 where socketId = ?;" << blobId;
-                _gameBlobs.erase(_gameBlobs.begin() + gameBlobId);
-            }
+            _scores[payload["blobId"]] += 1;
+            _gameBlobs.erase(_gameBlobs.begin() + gameBlobId);
         } else if (payload["messageType"] == "update") {
-            for(auto &blob : _blobs){
+            for(auto &blob : _blobs) {
                 if(blob.getId() == payload["id"]){
                     blob.setX(std::string(payload["x"]));
                     blob.setY(std::string(payload["y"]));
                     blob.setRadius(std::string(payload["r"]));
                 }
-            }
-            for(auto &blob : _blobs){
+
                 response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
             }
             for(auto &gameBlob : _gameBlobs){
                 response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
             }
             response["messageType"] = "updateBlobs";
-            int score;
-            std::string socketId = payload["id"];
-            _db << "select score from players where socketId = ?" << stoi(socketId) >> score;
-            response["score"] = score;
+            response["score"] = _scores[payload["id"]];
             connection->send(response.dump());
+        } else if(payload["messageType"] == "logout") {
+            std::string socketId = payload["id"];
+            int highscore;
+            _db << "select highscore from players where socketId = ?" << stoi(socketId) >> highscore;
+            if(highscore < _scores[payload["id"]]){
+                _db << "update players set highscore = ?, active = 0 where socketId = ?" << _scores[payload["id"]] << stoi(socketId);
+            }
         }
     }
 
@@ -109,6 +107,7 @@ private:
     database _db;
     std::vector<Blob> _blobs;
     std::vector<Blob> _gameBlobs;
+    std::map<std::string, int> _scores;
 };
 
 int main(int /*argc*/, const char* /*argv*/[]) {
