@@ -9,7 +9,7 @@
 
 class Blob {
 public:
-    Blob(std::basic_string<char> id, std::basic_string<char> x, std::basic_string<char> y, std::basic_string<char> radius);
+    Blob(std::string id, std::string x, std::string y, std::string radius);
 private:
     std::string _id;
 public:
@@ -19,15 +19,15 @@ public:
 
     std::string &getX();
 
-    void setX(std::basic_string<char> x);
+    void setX(std::string x);
 
     std::string &getY();
 
-    void setY(std::basic_string<char> y);
+    void setY(std::string y);
 
     std::string &getRadius();
 
-    void setRadius(std::basic_string<char> radius);
+    void setRadius(std::string radius);
 
 private:
     std::string _x;

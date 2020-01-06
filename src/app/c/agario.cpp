@@ -1,18 +1,10 @@
 #include "seasocks/PrintfLogger.h"
 #include "seasocks/Server.h"
 #include "seasocks/StringUtil.h"
-#include "seasocks/WebSocket.h"
-#include "seasocks/util/Json.h"
-#include "seasocks/PageHandler.h"
 
-#include <cstring>
 #include <iostream>
-#include <memory>
 #include <set>
-#include <sstream>
 #include <string>
-#include <zconf.h>
-#include <cmath>
 #include <map>
 #include "lib/json.hpp"
 #include "lib/sqlite_modern_cpp.h"
