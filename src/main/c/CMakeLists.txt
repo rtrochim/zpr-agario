@@ -77,7 +77,7 @@ target_include_directories(seasocks_obj PUBLIC
 )
 set_property(TARGET seasocks_obj PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 
-add_library(seasocks STATIC $<TARGET_OBJECTS:seasocks_obj> $<TARGET_OBJECTS:embedded>)
+add_library(seasocks STATIC $<TARGET_OBJECTS:seasocks_obj>)
 add_library(Seasocks::seasocks ALIAS seasocks)
 target_include_directories(seasocks PUBLIC
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/>
@@ -88,7 +88,7 @@ if (DEFLATE_SUPPORT)
     target_link_libraries(seasocks PRIVATE "${ZLIB_LIBRARIES}")
 endif()
 
-add_library(seasocks_so SHARED $<TARGET_OBJECTS:seasocks_obj> $<TARGET_OBJECTS:embedded>)
+add_library(seasocks_so SHARED $<TARGET_OBJECTS:seasocks_obj>)
 add_library(Seasocks::seasocks_so ALIAS seasocks_so)
 target_include_directories(seasocks_so PUBLIC ${ZLIB_INCLUDE_DIRS} 
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/>
