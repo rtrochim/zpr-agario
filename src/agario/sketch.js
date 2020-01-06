@@ -2,41 +2,18 @@ const MAX_WIDTH = 1400;
 const MAX_HEIGHT = 900;
 const REFRESH_RATE = 33;
 
-const generateUUID = () => {
-  let dt = new Date().getTime();
-  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = (dt + Math.random()*16)%16 | 0;
-    dt = Math.floor(dt/16);
-    return (c=='x' ? r :(r&0x3|0x8)).toString(16);
-  });
-  return uuid;
-};
-
 let socket;
 let blob;
 let blobs = [];
 let zoom = 1;
 let gameBlobs = [];
-let score = 0;
-let highScore = 0;
-let socketId = generateUUID();
 let eatenUserBlobs = [];
 let username;
 
-const printScore = () => {
-  document.getElementById('score').innerHTML = 'Your score: ' + score;
-
-  if (score > highScore) {
-    document.getElementById('highscore').innerHTML = 'Your high score is: ' + score;
-  }
-};
+const socketId = generateUUID();
 
 function setup() {
-  // const WIDTH = window.innerWidth <= MAX_WIDTH - 50 ? window.innerWidth - 50 : MAX_WIDTH;
-  // const HEIGHT = window.innerHeight <= MAX_HEIGHT - 75 ? window.innerHeight - 75 : MAX_HEIGHT;
-
   username = prompt('Please enter your username');
-  console.log('username', username);
 
   createCanvas(MAX_WIDTH, MAX_HEIGHT);
 
@@ -45,16 +22,13 @@ function setup() {
     data = JSON.parse(event.data);
     switch (data.messageType) {
       case 'updateBlobs':
-        score = data.score;
-        //blobs = data.blobs;
         blobs = data.blobs.filter(item => !eatenUserBlobs.includes(blob => item.id === blob.id));
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
-        printScore();
+        updateScore(data.score);
         break;
       case 'loggedIn':
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
-        highScore = data.highscore;
-        document.getElementById('highscore').innerHTML = 'Your high score is: ' + highScore;
+        updateHighScore(data.highscore);
         break;
       default:
         console.log('Unrecognized message');
@@ -72,11 +46,11 @@ function setup() {
 
     socket.send(JSON.stringify(data));
   };
-  printScore();
+
   blob = new Blob(random(width), random(height), 12);
 
   let data = {
-    messageType: "login",
+    messageType: 'login',
     id: socketId,
     x: blob.pos.x.toString(),
     y: blob.pos.y.toString(),
@@ -86,7 +60,7 @@ function setup() {
     username,
   };
 
-  socket.onopen = (e) => {
+  socket.onopen = () => {
     console.log("[open] Connection established");
     console.log("Sending to server");
     socket.send(JSON.stringify(data));
@@ -105,8 +79,27 @@ function draw() {
   scale(zoom);
   translate(-blob.pos.x, -blob.pos.y);
 
+  for (let i = gameBlobs.length-1; i >=0; i--) {
+    gameBlobs[i].show();
+    if (blob.eats(gameBlobs[i])) {
+      const data = {
+        messageType: "gameBlobEat",
+        blobId: socketId,
+        gameBlobId: i,
+        id: socketId,
+      };
+
+      gameBlobs.splice(i, 1);
+
+      if (new Date().getTime() - gameBlobInterval.getTime() > REFRESH_RATE) {
+        socket.send(JSON.stringify(data));
+        gameBlobInterval = new Date();
+      }
+    }
+  }
+
   for (let i = blobs.length - 1; i >= 0; i--) {
-    const { id, x, y, r } = blobs[i];
+    const { id, x, y, r, username } = blobs[i];
     const userBlob = new Blob(x, y, r, id);
 
     if (id !== socketId) {
@@ -132,6 +125,7 @@ function draw() {
         // @TODO: remove score & background & terminate socket
 
         socket.send(JSON.stringify(data));
+        updateScore(0);
         if (window.confirm('You were eaten. Do you want to try again?')) {
           const data = {
             messageType: 'logout',
@@ -149,27 +143,8 @@ function draw() {
 
       fill(255);
       textAlign(CENTER);
-      textSize(4);
-      text(id, x, y + r);
-    }
-  }
-
-  for (let i = gameBlobs.length-1; i >=0; i--) {
-    gameBlobs[i].show();
-    if (blob.eats(gameBlobs[i])) {
-      const data = {
-        messageType: "gameBlobEat",
-        blobId: socketId,
-        gameBlobId: i,
-        id: socketId,
-      };
-
-      gameBlobs.splice(i, 1);
-
-      if (new Date().getTime() - gameBlobInterval.getTime() > REFRESH_RATE) {
-        socket.send(JSON.stringify(data));
-        gameBlobInterval = new Date();
-      }
+      textSize(parseInt(r) - 2);
+      text(username, parseFloat(x), parseFloat(y));
     }
   }
 
@@ -190,7 +165,7 @@ function draw() {
 
   blob.constrain();
 
-  let data = {
+  const data = {
     messageType: "update",
     id: socketId,
     x: blob.pos.x.toString(),

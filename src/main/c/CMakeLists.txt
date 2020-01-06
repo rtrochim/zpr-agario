@@ -64,7 +64,7 @@ set(SEASOCKS_SOURCE_FILES
         ../../app/c/Blob.cpp
         )
 
-set(SEASOCKS_SOURCE_FILES ${SEASOCKS_SOURCE_FILES} seasocks/ZlibContextDisabled.cpp ../../app/c/Blob.cpp ../../app/c/Blob.h)
+set(SEASOCKS_SOURCE_FILES ${SEASOCKS_SOURCE_FILES} seasocks/ZlibContextDisabled.cpp ../../app/c/Blob.cpp ../../app/c/Blob.h ../../app/c/GameHandler.cpp)
 
 add_library(seasocks_obj OBJECT ${SEASOCKS_SOURCE_FILES})
 target_include_directories(seasocks_obj PUBLIC
