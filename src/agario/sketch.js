@@ -2,13 +2,24 @@ const MAX_WIDTH = 1400;
 const MAX_HEIGHT = 900;
 const REFRESH_RATE = 33;
 
+const generateUUID = () => {
+  let dt = new Date().getTime();
+  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = (dt + Math.random()*16)%16 | 0;
+    dt = Math.floor(dt/16);
+    return (c=='x' ? r :(r&0x3|0x8)).toString(16);
+  });
+  return uuid;
+};
+
 let socket;
 let blob;
 let blobs = [];
 let zoom = 1;
 let gameBlobs = [];
 let score = 0;
-let socketId = Math.round((Math.random() * 100)).toString();
+let socketId = generateUUID();
+
 const printScore = () => {
   document.getElementById('score').innerHTML = 'Your score: ' + score;
 };
@@ -48,7 +59,7 @@ function setup() {
     socket.send(JSON.stringify(data));
   };
   printScore();
-  blob = new Blob(random(width), random(height), random(8, 24));
+  blob = new Blob(random(width), random(height), 12);
 
   let data = {
     messageType: "login",
@@ -69,6 +80,7 @@ function setup() {
 
 let intervalDate = new Date();
 let gameBlobInterval = new Date();
+let userBlobInterval = new Date();
 
 function draw() {
   background(0);
@@ -81,18 +93,26 @@ function draw() {
 
   for (let i = blobs.length - 1; i >= 0; i--) {
     const { id, x, y, r } = blobs[i];
+    const userBlob = new Blob(x, y, r);
 
     if (id !== socketId) {
-      if (blob.eatsPlayer(new Blob(x, y, r))) {
-        // const data = {
-        //   messageType: 'userBlobEat',
-        //   userBlobId: blobs[i].id,
-        //   id: socketId,
-        // };
+      if (blob.eatsPlayer(userBlob)) {
+        const data = {
+          messageType: 'userBlobEat',
+          userBlobId: blobs[i].id,
+          id: socketId,
+        };
 
-        // blobs.splice(i, 1);
-        // socket.send(JSON.stringify(data));
-        // continue;
+        blobs.splice(i, 1);
+        if (new Date().getTime() - userBlobInterval.getTime() > 2 * REFRESH_RATE) {
+          socket.send(JSON.stringify(data));
+        }
+
+        continue;
+      } else if (userBlob.eatsPlayer(blob)) {
+        if (window.confirm('You were eaten to death. Do you want to try again?')) {
+          window.location.reload();
+        }
       }
 
       fill(0, 0, 255);
@@ -115,8 +135,9 @@ function draw() {
         id: socketId,
       };
 
+      gameBlobs.splice(i, 1);
+
       if (new Date().getTime() - gameBlobInterval.getTime() > REFRESH_RATE) {
-        gameBlobs.splice(i, 1);
         socket.send(JSON.stringify(data));
         gameBlobInterval = new Date();
       }

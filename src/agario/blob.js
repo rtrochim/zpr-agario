@@ -24,14 +24,11 @@ function Blob(x, y, r, id) {
   };
 
   this.eatsPlayer = (other) => {
-    console.log('this' ,this);
-    console.log('other', other);
     const d = p5.Vector.dist(this.pos, other.pos);
-    console.log('Eaten');
 
     if (d < this.r) {
-      // const sum = PI * this.r * this.r + PI * other.r/2 * other.r/2;
-      this.r += other.r;
+      const sum = PI * this.r * this.r + PI * other.r/2 * other.r/2;
+      this.r = sqrt(sum / PI);
       return true;
     } else {
       return false;

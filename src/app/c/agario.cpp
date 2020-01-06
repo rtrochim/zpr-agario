@@ -69,6 +69,15 @@ public:
             std::string blobId = payload["blobId"];
             _scores[payload["blobId"]] += 1;
             _gameBlobs.erase(_gameBlobs.begin() + gameBlobId);
+            for(auto &blob : _blobs) {
+                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+            }
+            for(auto &gameBlob : _gameBlobs){
+                response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
+            }
+            response["messageType"] = "updateBlobs";
+            response["score"] = _scores[payload["id"]];
+            connection->send(response.dump());
         } else if (payload["messageType"] == "update") {
             for(auto &blob : _blobs) {
                 if(blob.getId() == payload["id"]){
@@ -88,10 +97,25 @@ public:
         } else if(payload["messageType"] == "logout") {
             std::string socketId = payload["id"];
             int highscore;
-            _db << "select highscore from players where socketId = ?" << stoi(socketId) >> highscore;
+            _db << "select highscore from players where socketId = ?" << socketId >> highscore;
             if(highscore < _scores[payload["id"]]){
-                _db << "update players set highscore = ?, active = 0 where socketId = ?" << _scores[payload["id"]] << stoi(socketId);
+                _db << "update players set highscore = ?, active = 0 where socketId = ?" << _scores[payload["id"]] << socketId;
             }
+        } else if (payload["messageType"] == "userBlobEat") {
+            std::string userBlobId = payload["userBlobId"];
+            auto it = std::remove_if(_blobs.begin(), _blobs.end(), [&userBlobId](Blob& obj) { return obj.getId() == userBlobId; });
+            std::string eatenRadius = _blobs[it - _blobs.begin()].getRadius();
+            _scores[payload["id"]] += static_cast<int>(std::atof(eatenRadius.c_str()));
+            _blobs.erase(it);
+            for(auto &blob : _blobs) {
+                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+            }
+            for(auto &gameBlob : _gameBlobs){
+                response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
+            }
+            response["messageType"] = "updateBlobs";
+            response["score"] = _scores[payload["id"]];
+            connection->send(response.dump());
         }
     }
 
