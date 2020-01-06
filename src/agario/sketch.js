@@ -107,10 +107,11 @@ function draw() {
 
         blobs.splice(i, 1);
         eatenUserBlobs.push(userBlob);
-        if (new Date().getTime() - userBlobInterval.getTime() > 2 * REFRESH_RATE) {
-          socket.send(JSON.stringify(data));
-          userBlobInterval = new Date();
-        }
+        socket.send(JSON.stringify(data));
+        // if (new Date().getTime() - userBlobInterval.getTime() > 2 * REFRESH_RATE) {
+        //   socket.send(JSON.stringify(data));
+        //   userBlobInterval = new Date();
+        // }
 
         continue;
       } else if (userBlob.eatsPlayer(blob)) {

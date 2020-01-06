@@ -1,9 +1,3 @@
-// An extraordinarily simple test which presents a web page with some buttons.
-// Clicking on the numbered button increments the number, which is visible to
-// other connected clients.  WebSockets are used to do this: by the rather
-// suspicious means of sending raw JavaScript commands to be executed on other
-// clients.
-
 #include "seasocks/PrintfLogger.h"
 #include "seasocks/Server.h"
 #include "seasocks/StringUtil.h"
@@ -44,6 +38,9 @@ public:
         auto payload= json::parse(data);
         json response;
         if(payload["messageType"] == "login"){
+            int count;
+            _db << "select count(*) from players" >> count;
+            std::cout << count << std::endl;
             _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
                << std::string(payload["id"])
                << std::string("testname")

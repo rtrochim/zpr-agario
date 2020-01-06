@@ -3,5 +3,5 @@ mkdir build
 cd build
 cmake ..
 make
-cd ..
-./build/src/app/c/agario
+cd src/app/c
+./agario
