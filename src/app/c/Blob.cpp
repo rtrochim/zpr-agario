@@ -5,7 +5,8 @@
 #include "Blob.h"
 
 
-Blob::Blob(std::string id, std::string x, std::string y, std::string radius) : _id(std::move(id)), _x(std::move(x)), _y(std::move(y)), _radius(std::move(radius)){}
+Blob::Blob(std::string id, std::string x, std::string y, std::string radius, std::string username)
+: _id(std::move(id)), _x(std::move(x)), _y(std::move(y)), _radius(std::move(radius)), _username(std::move(username)){}
 
 std::string &Blob::getId(){
     return _id;
@@ -37,4 +38,12 @@ std::string &Blob::getRadius(){
 
 void Blob::setRadius(std::string radius) {
     _radius = std::move(radius);
+}
+
+std::string &Blob::getUsername(){
+    return _username;
+}
+
+void Blob::setUsername(std::string username) {
+    _username = std::move(username);
 }

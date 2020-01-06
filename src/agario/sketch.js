@@ -95,7 +95,6 @@ function setup() {
 
 let intervalDate = new Date();
 let gameBlobInterval = new Date();
-let userBlobInterval = new Date();
 
 function draw() {
   background(0);
@@ -121,10 +120,6 @@ function draw() {
         blobs.splice(i, 1);
         eatenUserBlobs.push(userBlob);
         socket.send(JSON.stringify(data));
-        // if (new Date().getTime() - userBlobInterval.getTime() > 2 * REFRESH_RATE) {
-        //   socket.send(JSON.stringify(data));
-        //   userBlobInterval = new Date();
-        // }
 
         continue;
       } else if (userBlob.eatsPlayer(blob)) {
@@ -200,7 +195,8 @@ function draw() {
     id: socketId,
     x: blob.pos.x.toString(),
     y: blob.pos.y.toString(),
-    r: blob.r.toString()
+    r: blob.r.toString(),
+    username,
   };
 
   if (socket.readyState === WebSocket.OPEN && new Date().getTime() - intervalDate.getTime() > REFRESH_RATE) {

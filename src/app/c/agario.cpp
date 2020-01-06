@@ -11,8 +11,8 @@
 #include "Blob.h"
 
 using namespace seasocks;
-using json = nlohmann::json;
-using database = sqlite::database;
+using namespace nlohmann;
+using namespace sqlite;
 
 class BasicHandler : public WebSocket::Handler {
 public:
@@ -33,7 +33,7 @@ public:
             int highscore = -1;
             try {
                 _db << "select highscore from players where name = ?" << std::string(payload["username"]) >> highscore;
-                _db << "update players set socketId = ?, active = 1" << std::string(payload["id"]);
+                _db << "update players set socketId = ?, active = 1 where name = ?" << std::string(payload["id"]) << std::string(payload["username"]);
                 response["highscore"] = highscore;
             } catch (sqlite::sqlite_exception& e) {
                 _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
@@ -43,7 +43,7 @@ public:
                 response["highscore"] = 0;
             }
             _scores[payload["id"]] = 0;
-            _blobs.push_back(*(new Blob(std::string(payload["id"]), std::string(payload["x"]), std::string(payload["y"]), std::string(payload["r"]))));
+            _blobs.push_back(*(new Blob(std::string(payload["id"]), std::string(payload["x"]), std::string(payload["y"]), std::string(payload["r"]), std::string(payload["username"]))));
             response["messageType"] = "loggedIn";
             if (_gameBlobs.empty()) {
                 int width = std::stoi(payload["width"].dump());
@@ -51,7 +51,7 @@ public:
                 for (int i = 0; i < 500; i++) {
                     std::string posX = std::to_string(-width + (std::rand() % (2*width + 1)));
                     std::string posY = std::to_string(-height + (std::rand() % (2*height + 1)));
-                    _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "4")));
+                    _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "4", "null")));
                 }
             }
             for(auto &gameBlob : _gameBlobs){
@@ -78,8 +78,9 @@ public:
                     blob.setX(std::string(payload["x"]));
                     blob.setY(std::string(payload["y"]));
                     blob.setRadius(std::string(payload["r"]));
+                    blob.setUsername(std::string(payload["username"]));
                 }
-                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}, {"username", blob.getUsername()}});
             }
             for(auto &gameBlob : _gameBlobs){
                 response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
@@ -106,7 +107,7 @@ public:
             _scores[payload["id"]] += static_cast<int>(std::atof(eatenRadius.c_str()));
             _blobs.erase(it, _blobs.end());
             for(auto &blob : _blobs) {
-                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
+                response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}, {"username", blob.getUsername()}});
             }
             for(auto &gameBlob : _gameBlobs){
                 response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});

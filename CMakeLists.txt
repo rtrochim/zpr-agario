@@ -4,22 +4,11 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 project(zpr-agario VERSION 0.1)
 
-
-option(DEFLATE_SUPPORT "Include support for deflate (requires zlib)." ON)
-
-if (DEFLATE_SUPPORT)
-    set(DEFLATE_SUPPORT_BOOL "true")
-else ()
-    set(DEFLATE_SUPPORT_BOOL "false")
-endif ()
 message(STATUS "${PROJECT_NAME} ${PROJECT_VERSION}")
 
 
-set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/src/test/suppressions.txt" CACHE INTERNAL "")
-include(CTest)
 include(Compiler)
 include(GNUInstallDirs)
-include(ClangFormat)
 
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.h.in internal/Config.h)
@@ -36,18 +25,6 @@ else()
     message(STATUS "Sqlite3 found")
 endif ()
 
-
-find_program(PYTHON_BIN NAMES python python3 DOC "Python executable")
-
-if (NOT PYTHON_BIN)
-    message(SEND_ERROR "Python not found")
-else()
-    message(STATUS "Using Python: '${PYTHON_BIN}'")
-endif ()
-
-if (DEFLATE_SUPPORT)
-    find_package(ZLIB REQUIRED)
-endif ()
 
 add_subdirectory("src")
 
