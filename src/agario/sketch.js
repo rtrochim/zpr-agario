@@ -18,16 +18,25 @@ let blobs = [];
 let zoom = 1;
 let gameBlobs = [];
 let score = 0;
+let highScore = 0;
 let socketId = generateUUID();
 let eatenUserBlobs = [];
+let username;
 
 const printScore = () => {
   document.getElementById('score').innerHTML = 'Your score: ' + score;
+
+  if (score > highScore) {
+    document.getElementById('highscore').innerHTML = 'Your high score is: ' + score;
+  }
 };
 
 function setup() {
   // const WIDTH = window.innerWidth <= MAX_WIDTH - 50 ? window.innerWidth - 50 : MAX_WIDTH;
   // const HEIGHT = window.innerHeight <= MAX_HEIGHT - 75 ? window.innerHeight - 75 : MAX_HEIGHT;
+
+  username = prompt('Please enter your username');
+  console.log('username', username);
 
   createCanvas(MAX_WIDTH, MAX_HEIGHT);
 
@@ -44,6 +53,8 @@ function setup() {
         break;
       case 'loggedIn':
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
+        highScore = data.highscore;
+        document.getElementById('highscore').innerHTML = 'Your high score is: ' + highScore;
         break;
       default:
         console.log('Unrecognized message');
@@ -55,6 +66,7 @@ function setup() {
   window.onunload = () => {
     const data = {
       messageType: 'logout',
+      username,
       id: socketId,
     };
 
@@ -70,7 +82,8 @@ function setup() {
     y: blob.pos.y.toString(),
     r: blob.r.toString(),
     height: MAX_HEIGHT,
-    width: MAX_WIDTH
+    width: MAX_WIDTH,
+    username,
   };
 
   socket.onopen = (e) => {
@@ -127,6 +140,7 @@ function draw() {
         if (window.confirm('You were eaten. Do you want to try again?')) {
           const data = {
             messageType: 'logout',
+            username,
             id: socketId,
           };
 

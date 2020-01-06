@@ -38,13 +38,18 @@ public:
         auto payload= json::parse(data);
         json response;
         if(payload["messageType"] == "login"){
-            int count;
-            _db << "select count(*) from players" >> count;
-            std::cout << count << std::endl;
-            _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
-               << std::string(payload["id"])
-               << std::string("testname")
-               << 1;
+            int highscore = -1;
+            try {
+                _db << "select highscore from players where name = ?" << std::string(payload["username"]) >> highscore;
+                _db << "update players set socketId = ?, active = 1" << std::string(payload["id"]);
+                response["highscore"] = highscore;
+            } catch (sqlite::sqlite_exception& e) {
+                _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
+                    << std::string(payload["id"])
+                    << std::string(payload["username"])
+                    << 1;
+                response["highscore"] = 0;
+            }
             _scores[payload["id"]] = 0;
             _blobs.push_back(*(new Blob(std::string(payload["id"]), std::string(payload["x"]), std::string(payload["y"]), std::string(payload["r"]))));
             response["messageType"] = "loggedIn";
@@ -91,12 +96,17 @@ public:
             response["score"] = _scores[payload["id"]];
             connection->send(response.dump());
         } else if(payload["messageType"] == "logout") {
+            std::string username = payload["username"];
             std::string socketId = payload["id"];
             int highscore;
-            _db << "select highscore from players where socketId = ?" << socketId >> highscore;
-            if(highscore < _scores[payload["id"]]){
-                _db << "update players set highscore = ?, active = 0 where socketId = ?" << _scores[payload["id"]] << socketId;
+            _db << "select highscore from players where name = ?" << username >> highscore;
+            if(highscore < _scores[socketId]){
+                _db << "update players set highscore = ?, active = 0 where name = ?" << _scores[socketId] << username;
+            } else {
+                _db << "update players set active = 0 where name = ?" << username;
             }
+            auto it = std::remove_if(_blobs.begin(), _blobs.end(), [&socketId](Blob& obj) { return obj.getId() == socketId; });
+            _blobs.erase(it, _blobs.end());
         } else if (payload["messageType"] == "userBlobEat") {
             std::string userBlobId = payload["userBlobId"];
             auto it = std::remove_if(_blobs.begin(), _blobs.end(), [&userBlobId](Blob& obj) { return obj.getId() == userBlobId; });
