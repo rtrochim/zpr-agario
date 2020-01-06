@@ -85,7 +85,6 @@ public:
                     blob.setY(std::string(payload["y"]));
                     blob.setRadius(std::string(payload["r"]));
                 }
-
                 response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
             }
             for(auto &gameBlob : _gameBlobs){
@@ -106,7 +105,7 @@ public:
             auto it = std::remove_if(_blobs.begin(), _blobs.end(), [&userBlobId](Blob& obj) { return obj.getId() == userBlobId; });
             std::string eatenRadius = _blobs[it - _blobs.begin()].getRadius();
             _scores[payload["id"]] += static_cast<int>(std::atof(eatenRadius.c_str()));
-            _blobs.erase(it);
+            _blobs.erase(it, _blobs.end());
             for(auto &blob : _blobs) {
                 response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}});
             }

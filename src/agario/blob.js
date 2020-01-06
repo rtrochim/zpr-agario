@@ -26,7 +26,7 @@ function Blob(x, y, r, id) {
   this.eatsPlayer = (other) => {
     const d = p5.Vector.dist(this.pos, other.pos);
 
-    if (d < this.r) {
+    if (d < this.r && this.r > other.r) {
       const sum = PI * this.r * this.r + PI * other.r/2 * other.r/2;
       this.r = sqrt(sum / PI);
       return true;

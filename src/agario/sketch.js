@@ -19,6 +19,7 @@ let zoom = 1;
 let gameBlobs = [];
 let score = 0;
 let socketId = generateUUID();
+let eatenUserBlobs = [];
 
 const printScore = () => {
   document.getElementById('score').innerHTML = 'Your score: ' + score;
@@ -36,7 +37,8 @@ function setup() {
     switch (data.messageType) {
       case 'updateBlobs':
         score = data.score;
-        blobs = data.blobs;
+        //blobs = data.blobs;
+        blobs = data.blobs.filter(item => !eatenUserBlobs.includes(blob => item.id === blob.id));
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
         printScore();
         break;
@@ -93,7 +95,7 @@ function draw() {
 
   for (let i = blobs.length - 1; i >= 0; i--) {
     const { id, x, y, r } = blobs[i];
-    const userBlob = new Blob(x, y, r);
+    const userBlob = new Blob(x, y, r, id);
 
     if (id !== socketId) {
       if (blob.eatsPlayer(userBlob)) {
@@ -104,13 +106,30 @@ function draw() {
         };
 
         blobs.splice(i, 1);
+        eatenUserBlobs.push(userBlob);
         if (new Date().getTime() - userBlobInterval.getTime() > 2 * REFRESH_RATE) {
           socket.send(JSON.stringify(data));
+          userBlobInterval = new Date();
         }
 
         continue;
       } else if (userBlob.eatsPlayer(blob)) {
-        if (window.confirm('You were eaten to death. Do you want to try again?')) {
+        const data = {
+          messageType: 'userBlobEat',
+          userBlobId: socketId,
+          id: blobs[i].id
+        };
+
+        // @TODO: remove score & background & terminate socket
+
+        socket.send(JSON.stringify(data));
+        if (window.confirm('You were eaten. Do you want to try again?')) {
+          const data = {
+            messageType: 'logout',
+            id: socketId,
+          };
+
+          socket.send(JSON.stringify(data));
           window.location.reload();
         }
       }
