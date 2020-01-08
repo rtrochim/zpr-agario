@@ -1,7 +1,7 @@
 #ifndef ZPR_AGARIO_GAME_H
 #define ZPR_AGARIO_GAME_H
 
-#include "Blob.h"
+#include "UserBlob.h"
 #include <vector>
 #include <map>
 
@@ -13,7 +13,7 @@ using namespace nlohmann;
 
 class Game {
 public:
-    explicit Game(database &&db);
+    explicit Game(database &db);
 
     void login(json &payload, json &response);
 
@@ -25,13 +25,14 @@ public:
 
     void logout(json &payload);
 
+private:
     void createGameBlobs(json &payload);
 
     int loginExistingUser(json &payload);
 
     void createNewUser(json &payload);
-private:
-    std::vector<Blob> _userBlobs;
+
+    std::vector<UserBlob> _userBlobs;
     std::vector<Blob> _gameBlobs;
     std::map<std::string, int> _scores;
     database _db;

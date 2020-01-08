@@ -7,9 +7,7 @@
 
 using namespace seasocks;
 
-
 class App : public WebSocket::Handler {
-
 public:
     explicit App(Server* server, Game &game);
 

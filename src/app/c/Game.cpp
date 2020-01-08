@@ -1,6 +1,8 @@
 #include "Game.h"
 
-Game::Game(database &&db) : _db(db) {}
+#include <memory>
+
+Game::Game(database &db) : _db(db) {}
 
 void Game::login(json &payload, json &response) {
     response["highscore"] = 0;
@@ -10,7 +12,7 @@ void Game::login(json &payload, json &response) {
         createNewUser(payload);
     }
     _scores[payload["id"]] = 0;
-    _userBlobs.push_back(*(new Blob(
+    _userBlobs.push_back(*(new UserBlob(
             std::string(payload["id"]),
             std::string(payload["x"]),
             std::string(payload["y"]),
@@ -20,11 +22,7 @@ void Game::login(json &payload, json &response) {
         createGameBlobs(payload);
     }
     for(auto &gameBlob : _gameBlobs){
-        response["gameBlobs"].push_back({
-            {"id",gameBlob.getId()},
-            {"x", gameBlob.getX()},
-            {"y", gameBlob.getY()},
-            {"r", gameBlob.getRadius()}});
+        response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
     }
     response["messageType"] = "loggedIn";
 }
@@ -34,8 +32,8 @@ void Game::eatGameBlob(json &payload, json &response) {
     std::string blobId = payload["blobId"];
     _scores[payload["blobId"]] += 1;
     _gameBlobs.erase(_gameBlobs.begin() + gameBlobId);
-    for(auto &blob : _userBlobs) {
-        response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}, {"username", blob.getUsername()}});
+    for(auto &userBlob : _userBlobs) {
+        response["blobs"].push_back({{"id", userBlob.getId()}, {"x", userBlob.getX()}, {"y", userBlob.getY()}, {"r", userBlob.getRadius()}, {"username", userBlob.getUsername()}});
     }
     for(auto &gameBlob : _gameBlobs){
         response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
@@ -45,14 +43,14 @@ void Game::eatGameBlob(json &payload, json &response) {
 }
 
 void Game::update(json &payload, json &response){
-    for(auto &blob : _userBlobs) {
-        if(blob.getId() == payload["id"]){
-            blob.setX(std::string(payload["x"]));
-            blob.setY(std::string(payload["y"]));
-            blob.setRadius(std::string(payload["r"]));
-            blob.setUsername(std::string(payload["username"]));
+    for(auto &userBlob : _userBlobs) {
+        if(userBlob.getId() == payload["id"]){
+            userBlob.setX(std::string(payload["x"]));
+            userBlob.setY(std::string(payload["y"]));
+            userBlob.setRadius(std::string(payload["r"]));
+            userBlob.setUsername(std::string(payload["username"]));
         }
-        response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}, {"username", blob.getUsername()}});
+        response["blobs"].push_back({{"id", userBlob.getId()}, {"x", userBlob.getX()}, {"y", userBlob.getY()}, {"r", userBlob.getRadius()}, {"username", userBlob.getUsername()}});
     }
     for(auto &gameBlob : _gameBlobs){
         response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
@@ -63,12 +61,12 @@ void Game::update(json &payload, json &response){
 
 void Game::eatUserBlob(json &payload, json &response){
     std::string userBlobId = payload["userBlobId"];
-    auto it = std::remove_if(_userBlobs.begin(), _userBlobs.end(), [&userBlobId](Blob& obj) { return obj.getId() == userBlobId; });
+    auto it = std::remove_if(_userBlobs.begin(), _userBlobs.end(), [&userBlobId](UserBlob& userBlob) { return userBlob.getId() == userBlobId; });
     std::string eatenRadius = _userBlobs[it - _userBlobs.begin()].getRadius();
     _scores[payload["id"]] += static_cast<int>(std::atof(eatenRadius.c_str()));
     _userBlobs.erase(it, _userBlobs.end());
-    for(auto &blob : _userBlobs) {
-        response["blobs"].push_back({{"id", blob.getId()}, {"x", blob.getX()}, {"y", blob.getY()},{"r", blob.getRadius()}, {"username", blob.getUsername()}});
+    for(auto &userBlob : _userBlobs) {
+        response["blobs"].push_back({{"id", userBlob.getId()}, {"x", userBlob.getX()}, {"y", userBlob.getY()}, {"r", userBlob.getRadius()}, {"username", userBlob.getUsername()}});
     }
     for(auto &gameBlob : _gameBlobs){
         response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
@@ -87,7 +85,7 @@ void Game::logout(json &payload){
     } else {
         _db << "update players set active = 0 where name = ?" << username;
     }
-    auto it = std::remove_if(_userBlobs.begin(), _userBlobs.end(), [&socketId](Blob& obj) { return obj.getId() == socketId; });
+    auto it = std::remove_if(_userBlobs.begin(), _userBlobs.end(), [&socketId](UserBlob &userBlob) { return userBlob.getId() == socketId; });
     _userBlobs.erase(it, _userBlobs.end());
 }
 
@@ -97,7 +95,7 @@ void Game::createGameBlobs(json &payload) {
     for (int i = 0; i < 500; i++) {
         std::string posX = std::to_string(-width + (std::rand() % (2 * width + 1)));
         std::string posY = std::to_string(-height + (std::rand() % (2 * height + 1)));
-        _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "4", "null")));
+        _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "4")));
     }
 }
 
