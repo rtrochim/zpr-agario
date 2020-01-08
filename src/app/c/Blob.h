@@ -1,13 +1,10 @@
-//
-// Created by radek on 27.11.2019.
-//
-
 #ifndef ZPR_AGARIO_BLOB_H
 #define ZPR_AGARIO_BLOB_H
 
 #include <string>
 
 class Blob {
+
 public:
     Blob(std::string id, std::string x, std::string y, std::string radius, std::string username);
 

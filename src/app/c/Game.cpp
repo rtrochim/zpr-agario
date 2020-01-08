@@ -1,42 +1,8 @@
-#include "GameHandler.h"
+#include "Game.h"
 
-GameHandler::GameHandler(Server *server, database &db): _server(server), _db(db) {
-}
+Game::Game(database &&db) : _db(db) {}
 
-void GameHandler::onConnect(WebSocket* connection) {
-    _connections.insert(connection);
-    std::cout << "Connected: " << connection->getRequestUri()
-              << " : " << formatAddress(connection->getRemoteAddress())
-              << "\nCredentials: " << *(connection->credentials()) << "\n";
-}
-
-void GameHandler::onData(WebSocket* connection, const char* data) {
-    auto payload= json::parse(data);
-    json response;
-    if(payload["messageType"] == "login"){
-        handleLogin(payload, response);
-        connection->send(response.dump());
-    } else if (payload["messageType"] == "eatGameBlob") {
-        handleEatGameBlob(payload, response);
-        connection->send(response.dump());
-    } else if (payload["messageType"] == "update") {
-        handleUpdate(payload, response);
-        connection->send(response.dump());
-    } else if (payload["messageType"] == "eatUserBlob") {
-        handleEatUserBlob(payload, response);
-        connection->send(response.dump());
-    } else if(payload["messageType"] == "logout") {
-        handleLogout(payload);
-    }
-}
-
-void GameHandler::onDisconnect(WebSocket* connection) {
-    _connections.erase(connection);
-    std::cout << "Disconnected: " << connection->getRequestUri()
-        << " : " << formatAddress(connection->getRemoteAddress()) << "\n";
-}
-
-void GameHandler::handleLogin(json &payload, json &response) {
+void Game::login(json &payload, json &response) {
     response["highscore"] = 0;
     try {
         response["highscore"] = loginExistingUser(payload);
@@ -63,7 +29,7 @@ void GameHandler::handleLogin(json &payload, json &response) {
     response["messageType"] = "loggedIn";
 }
 
-void GameHandler::handleEatGameBlob(json &payload, json &response) {
+void Game::eatGameBlob(json &payload, json &response) {
     int gameBlobId = payload["gameBlobId"];
     std::string blobId = payload["blobId"];
     _scores[payload["blobId"]] += 1;
@@ -78,7 +44,7 @@ void GameHandler::handleEatGameBlob(json &payload, json &response) {
     response["messageType"] = "update";
 }
 
-void GameHandler::handleUpdate(json &payload, json &response){
+void Game::update(json &payload, json &response){
     for(auto &blob : _userBlobs) {
         if(blob.getId() == payload["id"]){
             blob.setX(std::string(payload["x"]));
@@ -95,7 +61,7 @@ void GameHandler::handleUpdate(json &payload, json &response){
     response["score"] = _scores[payload["id"]];
 }
 
-void GameHandler::handleEatUserBlob(json &payload, json &response){
+void Game::eatUserBlob(json &payload, json &response){
     std::string userBlobId = payload["userBlobId"];
     auto it = std::remove_if(_userBlobs.begin(), _userBlobs.end(), [&userBlobId](Blob& obj) { return obj.getId() == userBlobId; });
     std::string eatenRadius = _userBlobs[it - _userBlobs.begin()].getRadius();
@@ -111,7 +77,7 @@ void GameHandler::handleEatUserBlob(json &payload, json &response){
     response["score"] = _scores[payload["id"]];
 }
 
-void GameHandler::handleLogout(json &payload){
+void Game::logout(json &payload){
     std::string username = payload["username"];
     std::string socketId = payload["id"];
     int highscore;
@@ -125,7 +91,7 @@ void GameHandler::handleLogout(json &payload){
     _userBlobs.erase(it, _userBlobs.end());
 }
 
-void GameHandler::createGameBlobs(json &payload) {
+void Game::createGameBlobs(json &payload) {
     int width = std::stoi(payload["width"].dump());
     int height = std::stoi(payload["height"].dump());
     for (int i = 0; i < 500; i++) {
@@ -135,7 +101,7 @@ void GameHandler::createGameBlobs(json &payload) {
     }
 }
 
-int GameHandler::loginExistingUser(json &payload) {
+int Game::loginExistingUser(json &payload) {
     int highscore;
     _db << "select highscore from players where name = ?" << std::string(payload["username"]) >> highscore;
     _db << "update players set socketId = ?, active = 1 where name = ?" << std::string(payload["id"])
@@ -143,9 +109,10 @@ int GameHandler::loginExistingUser(json &payload) {
     return highscore;
 }
 
-void GameHandler::createNewUser(json &payload){
+void Game::createNewUser(json &payload){
     _db << "insert into 'players' (socketId, name, active) values (?,?,?);"
         << std::string(payload["id"])
         << std::string(payload["username"])
         << 1;
 }
+

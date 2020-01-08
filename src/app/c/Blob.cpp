@@ -1,11 +1,4 @@
-//
-// Created by radek on 27.11.2019.
-//
-
 #include "Blob.h"
-
-#include <utility>
-
 
 Blob::Blob(std::string id, std::string x, std::string y, std::string radius, std::string username)
 : _id(std::move(id)), _x(std::move(x)), _y(std::move(y)), _radius(std::move(radius)), _username(std::move(username)){}

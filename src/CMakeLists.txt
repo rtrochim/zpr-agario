@@ -1,3 +1,3 @@
 
-add_subdirectory("main/c")
+add_subdirectory("server/c")
 add_subdirectory("app/c")
