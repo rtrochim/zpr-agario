@@ -21,7 +21,7 @@ function setup() {
   socket.onmessage = (event) => {
     data = JSON.parse(event.data);
     switch (data.messageType) {
-      case 'updateBlobs':
+      case 'update':
         blobs = data.blobs.filter(item => !eatenUserBlobs.includes(blob => item.id === blob.id));
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
         updateScore(data.score);
@@ -52,9 +52,9 @@ function setup() {
   let data = {
     messageType: 'login',
     id: socketId,
-    x: blob.pos.x.toString(),
-    y: blob.pos.y.toString(),
-    r: blob.r.toString(),
+    x: blob.position.x.toString(),
+    y: blob.position.y.toString(),
+    r: blob.radius.toString(),
     height: MAX_HEIGHT,
     width: MAX_WIDTH,
     username,
@@ -74,16 +74,16 @@ function draw() {
   background(0);
 
   translate(width / 2, height / 2);
-  let newzoom = 64 / blob.r;
+  let newzoom = 64 / blob.radius;
   zoom = lerp(zoom, newzoom, 0.1);
   scale(zoom);
-  translate(-blob.pos.x, -blob.pos.y);
+  translate(-blob.position.x, -blob.position.y);
 
   for (let i = gameBlobs.length-1; i >=0; i--) {
     gameBlobs[i].show();
     if (blob.eats(gameBlobs[i])) {
       const data = {
-        messageType: "gameBlobEat",
+        messageType: "eatGameBlob",
         blobId: socketId,
         gameBlobId: i,
         id: socketId,
@@ -105,7 +105,7 @@ function draw() {
     if (id !== socketId) {
       if (blob.eatsPlayer(userBlob)) {
         const data = {
-          messageType: 'userBlobEat',
+          messageType: 'eatUserBlob',
           userBlobId: blobs[i].id,
           id: socketId,
         };
@@ -116,24 +116,26 @@ function draw() {
 
         continue;
       } else if (userBlob.eatsPlayer(blob)) {
-        const data = {
-          messageType: 'userBlobEat',
+        const userData = {
+          messageType: 'eatUserBlob',
           userBlobId: socketId,
           id: blobs[i].id
         };
 
         // @TODO: remove score & background & terminate socket
 
-        socket.send(JSON.stringify(data));
+        socket.send(JSON.stringify(userData));
         updateScore(0);
-        if (window.confirm('You were eaten. Do you want to try again?')) {
-          const data = {
-            messageType: 'logout',
-            username,
-            id: socketId,
-          };
 
-          socket.send(JSON.stringify(data));
+        const gameData = {
+          messageType: 'logout',
+          username,
+          id: socketId,
+        };
+
+        socket.send(JSON.stringify(gameData));
+
+        if (window.confirm('Game over!. Do you want to try again?')) {
           window.location.reload();
         }
       }
@@ -168,9 +170,9 @@ function draw() {
   const data = {
     messageType: "update",
     id: socketId,
-    x: blob.pos.x.toString(),
-    y: blob.pos.y.toString(),
-    r: blob.r.toString(),
+    x: blob.position.x.toString(),
+    y: blob.position.y.toString(),
+    r: blob.radius.toString(),
     username,
   };
 

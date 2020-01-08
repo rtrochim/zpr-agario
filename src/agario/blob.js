@@ -1,20 +1,20 @@
-function Blob(x, y, r) {
-  this.pos = createVector(x, y, 0);
-  this.r = r;
-  this.vel = createVector(0, 0, 0);
+function Blob(x, y, radius) {
+  this.position = createVector(x, y, 0);
+  this.radius = radius;
+  this.velocity = createVector(0, 0, 0);
 
   this.update = () => {
-    const newvel = createVector((mouseX - width / 2), (mouseY - height / 2));
-    newvel.limit(3 - (this.r / 100));
-    this.vel.lerp(newvel, 0.2);
-    this.pos.add(this.vel);
+    const newVelocity = createVector((mouseX - width / 2), (mouseY - height / 2));
+    newVelocity.limit(3 - (this.radius / 100));
+    this.velocity.lerp(newVelocity, 0.2);
+    this.position.add(this.velocity);
   };
 
   this.eats = (other) => {
-    const d = p5.Vector.dist(this.pos, other.pos);
-    if (d < this.r + other.r) {
-      const sum = PI * this.r * this.r + PI * other.r / (1.5) * other.r / (1.5);
-      this.r = sqrt(sum / PI);
+    const distance = p5.Vector.dist(this.position, other.position);
+    if (distance < this.radius + other.radius) {
+      const sum = PI * this.radius * this.radius + PI * other.radius / (1.5) * other.radius / (1.5);
+      this.radius = sqrt(sum / PI);
       return true;
     } else {
       return false;
@@ -22,11 +22,11 @@ function Blob(x, y, r) {
   };
 
   this.eatsPlayer = (other) => {
-    const d = p5.Vector.dist(this.pos, other.pos);
+    const distance = p5.Vector.dist(this.position, other.position);
 
-    if (d < this.r && this.r > other.r) {
-      const sum = PI * this.r * this.r + PI * other.r / 2 * other.r / 2;
-      this.r = sqrt(sum / PI);
+    if (distance < this.radius && this.radius > other.radius) {
+      const sum = PI * this.radius * this.radius + PI * other.radius / 2 * other.radius / 2;
+      this.radius = sqrt(sum / PI);
       return true;
     } else {
       return false;
@@ -34,12 +34,12 @@ function Blob(x, y, r) {
   };
 
   this.constrain = () => {
-    blob.pos.x = constrain(blob.pos.x, -1400, 1400);
-    blob.pos.y = constrain(blob.pos.y, -900, 900);
+    blob.position.x = constrain(blob.position.x, -1400, 1400);
+    blob.position.y = constrain(blob.position.y, -900, 900);
   };
 
   this.show = () => {
     fill(255);
-    ellipse(this.pos.x, this.pos.y, this.r * 2, this.r * 2);
+    ellipse(this.position.x, this.position.y, this.radius * 2, this.radius * 2);
   };
 }
