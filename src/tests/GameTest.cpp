@@ -3,7 +3,7 @@
 #include <sstream>
 #include <string>
 #include "lib/sqlite_modern_cpp.h"
-#include "../app/c/Game.cpp"
+#include "../app/c/App.h"
 
 using namespace sqlite;
 

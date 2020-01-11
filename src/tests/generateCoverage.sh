@@ -4,7 +4,7 @@
 cp agario.db test.db
 g++ -std=c++14 -fprofile-arcs -ftest-coverage BlobTest.cpp -L /usr/lib -I/usr/include -o BlobTest
 g++ -std=c++14 -fprofile-arcs -ftest-coverage UserBlobTest.cpp -L /usr/lib -I/usr/include -o UserBlobTest
-g++ -std=c++17 -fprofile-arcs -ftest-coverage GameTest.cpp -L /usr/lib -I/usr/include -I ../server/c -o GameTest
+g++ -std=c++14 -fprofile-arcs -ftest-coverage GameTest.cpp -L /usr/lib -I/usr/include -I ../server/c -lsqlite3 -o GameTest
 ./BlobTest
 ./UserBlobTest
 ./GameTest

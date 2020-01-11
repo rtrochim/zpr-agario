@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include "../app/c/UserBlob.cpp"
+#include "../app/c/Blob.cpp"
 
 BOOST_AUTO_TEST_CASE( test_get_user_blob_username )
 {

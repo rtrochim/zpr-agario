@@ -1,2 +1,2 @@
 rm -rf coverage ../../../bioweb/coverage
-rm BlobTest UserBlobTest *.info *.gcno *.gcda --force
+rm BlobTest UserBlobTest GameTest *.info *.gcno *.gcda --force
