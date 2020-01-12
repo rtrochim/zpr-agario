@@ -47,8 +47,6 @@
 #include "../server/c/lib/sqlite_modern_cpp/utility/function_traits.h"
 #include "../server/c/lib/sqlite_modern_cpp/utility/utf16_utf8.h"
 
-
-
 BOOST_AUTO_TEST_CASE( test_app ){
     using namespace seasocks;
     sqlite::database db("./test.db");

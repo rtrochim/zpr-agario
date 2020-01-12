@@ -1,19 +1,30 @@
-TARGETS=BlobTest
+TARGETS = BlobTest GameTest UserBlobTest
+CXXFLAGS = -std=c++14 -fprofile-arcs -ftest-coverage
+LIBS = -L /usr/lib -lsqlite3
+INC = -I/usr/include -I ../server/c
+LCOV := lcov
+GENHTML := genhtml test.info --output-directory coverage
+LCOV_FLAGS = --no-external --base-directory ../app/c
 
-all:
-    g++ -o BlobTest -fprofile-arcs -ftest-coverage BlobTest.cpp -L /usr/lib -I/usr/include
-    g++ -o UserBlobTest -fprofile-arcs -ftest-coverage UserBlobTest.cpp -L /usr/lib -I/usr/include
+all: test
 
-test: $(TARGETS) $(addprefix run-,$(TARGETS))
+test: db $(TARGETS) $(addprefix run-,$(TARGETS)) lcov genhtml
 
 %: %.cpp
-	g++ -o BlobTest -fprofile-arcs -ftest-coverage BlobTest.cpp -L /usr/lib -I/usr/include
+	$(CXX) $(CXXFLAGS) $< $(LIBS) $(INC) -o $@
 
 run-%: %
-	-./$^ --log_level=all
+	-./$^
+
+lcov:
+	$(LCOV) $(LCOV_FLAGS) -c -d ./ -o test.info
+
+genhtml:
+	$(GENHTML)
 
 clean:
-	rm $(TARGETS) *-report.xml
-	rm *.gcda
-	rm *.gnca
+	rm $(TARGETS) *.gcda *.gcno test.info test.db --force
+	rm -rf coverage --force
 
+db:
+	cp agario.db test.db
