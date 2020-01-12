@@ -1,4 +1,4 @@
-#include "internal/Config.h"
+//#include "internal/Config.h"
 #include "internal/LogStream.h"
 
 #include "seasocks/Connection.h"
@@ -579,13 +579,9 @@ void Server::setMaxKeepAliveDrops(int maxKeepAliveDrops) {
     _maxKeepAliveDrops = maxKeepAliveDrops;
 }
 
-void Server::setPerMessageDeflateEnabled(bool enabled) {
-    if (!Config::deflateEnabled) {
-        LS_ERROR(_logger, "Ignoring request to enable deflate as Seasocks was compiled without support");
-        return;
-    }
-    LS_INFO(_logger, "Setting per-message deflate to " << (enabled ? "enabled" : "disabled"));
-    _perMessageDeflateEnabled = enabled;
+void Server::setPerMessageDeflateEnabled() {
+    LS_ERROR(_logger, "Ignoring request to enable deflate as Seasocks was compiled without support");
+    return;
 }
 
 void Server::checkThread() const {

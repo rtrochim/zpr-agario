@@ -1,4 +1,4 @@
-#include "internal/Config.h"
+//#include "internal/Config.h"
 #include "internal/Embedded.h"
 #include "internal/HeaderMap.h"
 #include "internal/HybiAccept.h"
@@ -39,6 +39,16 @@
 #include <byteswap.h>
 #include <unordered_map>
 #include <memory>
+
+
+namespace seasocks {
+
+    struct Config {
+        static constexpr auto version = "0.0.1";
+        static constexpr bool deflateEnabled = false;
+    };
+
+}
 
 namespace {
 

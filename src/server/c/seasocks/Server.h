@@ -98,7 +98,7 @@ public:
         return _clientBufferSize;
     }
 
-    void setPerMessageDeflateEnabled(bool enabled);
+    void setPerMessageDeflateEnabled();
     bool getPerMessageDeflateEnabled() {
         return _perMessageDeflateEnabled;
     }
