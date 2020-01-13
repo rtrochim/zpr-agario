@@ -19,6 +19,8 @@ using namespace nlohmann;
  ***********************************************/
 class Game {
 public:
+    static const int GAME_BLOBS_NUMBER = 500; /*!< Number of game blobs created when the game starts  */
+
     /**
     *  @brief Create a Game object with db instance associated with it
     *  @param[in]   db   Reference on a databse instance, that will be storing the state of a given Game
