@@ -1,6 +1,10 @@
 const MAX_WIDTH = 1400;
 const MAX_HEIGHT = 900;
 const REFRESH_RATE = 33;
+const BLOB_DEFAULT_RADIUS = 12;
+const DEFAULT_ZOOM = 64;
+const LERP_RATIO = 0.1;
+const STROKE_WEIGHT = 4;
 
 let socket;
 let blob;
@@ -12,8 +16,17 @@ let username;
 
 const socketId = generateUUID();
 
+const MESSAGE_TYPES = {
+  EAT_GAME_BLOB: 'eatGameBlob',
+  EAT_USER_BLOB: 'eatUserBlob',
+  LOGGED_IN: 'loggedIn',
+  LOGIN: 'login',
+  LOGOUT: 'logout',
+  UPDATE: 'update',
+};
+
 function setup() {
-  username = prompt('Please enter your username');
+  username = prompt('Podaj swoją nazwę użytkownika');
 
   createCanvas(MAX_WIDTH, MAX_HEIGHT);
 
@@ -21,12 +34,12 @@ function setup() {
   socket.onmessage = (event) => {
     data = JSON.parse(event.data);
     switch (data.messageType) {
-      case 'update':
+      case MESSAGE_TYPES.UPDATE:
         blobs = data.blobs.filter(item => !eatenUserBlobs.includes(blob => item.id === blob.id));
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
         updateScore(data.score);
         break;
-      case 'loggedIn':
+      case MESSAGE_TYPES.LOGGED_IN:
         gameBlobs = data.gameBlobs.map(item => new Blob(parseFloat(item.x), parseFloat(item.y), parseFloat(item.r)));
         updateHighScore(data.highscore);
         break;
@@ -39,7 +52,7 @@ function setup() {
 
   window.onbeforeunload = () => {
     const data = {
-      messageType: 'logout',
+      messageType: MESSAGE_TYPES.LOGOUT,
       username,
       id: socketId,
     };
@@ -47,10 +60,10 @@ function setup() {
     socket.send(JSON.stringify(data));
   };
 
-  blob = new Blob(random(width), random(height), 12);
+  blob = new Blob(random(width), random(height), BLOB_DEFAULT_RADIUS);
 
   let data = {
-    messageType: 'login',
+    messageType: MESSAGE_TYPES.LOGIN,
     id: socketId,
     x: blob.position.x.toString(),
     y: blob.position.y.toString(),
@@ -73,8 +86,8 @@ function draw() {
   background(0);
 
   translate(width / 2, height / 2);
-  let newzoom = 64 / blob.radius;
-  zoom = lerp(zoom, newzoom, 0.1);
+  let newzoom = DEFAULT_ZOOM / blob.radius;
+  zoom = lerp(zoom, newzoom, LERP_RATIO);
   scale(zoom);
   translate(-blob.position.x, -blob.position.y);
 
@@ -82,7 +95,7 @@ function draw() {
     gameBlobs[i].show();
     if (blob.eats(gameBlobs[i])) {
       const data = {
-        messageType: "eatGameBlob",
+        messageType: MESSAGE_TYPES.EAT_GAME_BLOB,
         gameBlobId: i,
         id: socketId,
       };
@@ -103,7 +116,7 @@ function draw() {
     if (id !== socketId) {
       if (blob.eatsPlayer(userBlob)) {
         const data = {
-          messageType: 'eatUserBlob',
+          messageType: MESSAGE_TYPES.EAT_USER_BLOB,
           userBlobId: blobs[i].id,
           id: socketId,
         };
@@ -115,25 +128,23 @@ function draw() {
         continue;
       } else if (userBlob.eatsPlayer(blob)) {
         const userData = {
-          messageType: 'eatUserBlob',
+          messageType: MESSAGE_TYPES.EAT_USER_BLOB,
           userBlobId: socketId,
           id: blobs[i].id
         };
-
-        // @TODO: remove score & background & terminate socket
 
         socket.send(JSON.stringify(userData));
         updateScore(0);
 
         const gameData = {
-          messageType: 'logout',
+          messageType: MESSAGE_TYPES.LOGOUT,
           username,
           id: socketId,
         };
 
         socket.send(JSON.stringify(gameData));
 
-        if (window.confirm('Game over!. Do you want to try again?')) {
+        if (window.confirm('Koniec gry!. Czy chcesz spróbować ponownie?')) {
           window.location.reload();
         }
       }
@@ -150,7 +161,7 @@ function draw() {
 
   // Draw arena walls
   stroke('white');
-  strokeWeight(4);
+  strokeWeight(STROKE_WEIGHT);
   line(-MAX_WIDTH,MAX_HEIGHT,MAX_WIDTH,MAX_HEIGHT);
   line(-MAX_WIDTH,-MAX_HEIGHT,MAX_WIDTH,-MAX_HEIGHT);
   line(MAX_WIDTH,-MAX_HEIGHT,MAX_WIDTH,MAX_HEIGHT);
@@ -166,7 +177,7 @@ function draw() {
   blob.constrain();
 
   const data = {
-    messageType: "update",
+    messageType: MESSAGE_TYPES.UPDATE,
     id: socketId,
     x: blob.position.x.toString(),
     y: blob.position.y.toString(),
