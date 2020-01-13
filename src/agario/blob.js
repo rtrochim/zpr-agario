@@ -20,7 +20,7 @@ function Blob(x, y, radius) {
     const distance = p5.Vector.dist(this.position, other.position);
     if (distance < this.radius + other.radius) {
       const sum = PI * this.radius * this.radius + PI * other.radius / (GAME_BLOB_RATIO) * other.radius / (GAME_BLOB_RATIO);
-      this.radius = sqrt(sum / PI);
+      this.radius = Math.sqrt(sum / PI);
       return true;
     } else {
       return false;
@@ -32,7 +32,7 @@ function Blob(x, y, radius) {
 
     if (distance < this.radius && this.radius > other.radius) {
       const sum = PI * this.radius * this.radius + PI * other.radius / USER_BLOB_RATIO * other.radius / USER_BLOB_RATIO;
-      this.radius = sqrt(sum / PI);
+      this.radius = Math.sqrt(sum / PI);
       return true;
     } else {
       return false;
@@ -40,8 +40,8 @@ function Blob(x, y, radius) {
   };
 
   this.constrain = () => {
-    blob.position.x = constrain(blob.position.x, -MAX_WIDTH, MAX_WIDTH);
-    blob.position.y = constrain(blob.position.y, -MAX_HEIGHT, MAX_HEIGHT);
+    this.position.x = constrain(this.position.x, -MAX_WIDTH, MAX_WIDTH);
+    this.position.y = constrain(this.position.y, -MAX_HEIGHT, MAX_HEIGHT);
   };
 
   this.show = () => {

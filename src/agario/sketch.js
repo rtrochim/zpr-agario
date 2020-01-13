@@ -190,3 +190,8 @@ function draw() {
     intervalDate = new Date();
   }
 }
+
+module.exports = {
+  draw,
+  setup,
+};

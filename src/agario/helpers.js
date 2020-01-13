@@ -24,3 +24,9 @@ function updateScore (score) {
         updateHighScore(score);
     }
 }
+
+module.exports = {
+    generateUUID,
+    updateHighScore,
+    updateScore,
+};
