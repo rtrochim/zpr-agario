@@ -5,7 +5,6 @@
 Game::Game(database &db) : _db(db) {}
 
 void Game::login(json &payload, json &response) {
-    // Initial highscore equals zero
     response["highscore"] = 0;
     // Try to get existing user from database, if failed, create new one
     try {
@@ -20,7 +19,8 @@ void Game::login(json &payload, json &response) {
             std::string(payload["x"]),
             std::string(payload["y"]),
             std::string(payload["r"]),
-            std::string(payload["username"]))));
+            std::string(payload["username"])
+            )));
     // If this is the first user, create game blobs as well
     if (_gameBlobs.empty()) {
         createGameBlobs(payload);
@@ -49,14 +49,16 @@ void Game::eatGameBlob(json &payload, json &response) {
             {"x", userBlob.getX()},
             {"y", userBlob.getY()},
             {"r", userBlob.getRadius()},
-            {"username", userBlob.getUsername()}});
+            {"username", userBlob.getUsername()}
+        });
     }
     for(auto &gameBlob : _gameBlobs){
         response["gameBlobs"].push_back({
             {"id",gameBlob.getId()},
             {"x", gameBlob.getX()},
             {"y", gameBlob.getY()},
-            {"r", gameBlob.getRadius()}});
+            {"r", gameBlob.getRadius()}
+        });
     }
     response["score"] = _scores[payload["id"]];
     response["messageType"] = "update";
@@ -76,14 +78,16 @@ void Game::update(json &payload, json &response){
             {"x", userBlob.getX()},
             {"y", userBlob.getY()},
             {"r", userBlob.getRadius()},
-            {"username", userBlob.getUsername()}});
+            {"username", userBlob.getUsername()}
+        });
     }
     for(auto &gameBlob : _gameBlobs){
         response["gameBlobs"].push_back({
             {"id",gameBlob.getId()},
             {"x", gameBlob.getX()},
             {"y", gameBlob.getY()},
-            {"r", gameBlob.getRadius()}});
+            {"r", gameBlob.getRadius()}
+        });
     }
     response["messageType"] = "update";
     response["score"] = _scores[payload["id"]];
@@ -98,10 +102,20 @@ void Game::eatUserBlob(json &payload, json &response){
     _scores[payload["id"]] += static_cast<int>(std::atof(eatenRadius.c_str()));
     _userBlobs.erase(it, _userBlobs.end());
     for(auto &userBlob : _userBlobs) {
-        response["blobs"].push_back({{"id", userBlob.getId()}, {"x", userBlob.getX()}, {"y", userBlob.getY()}, {"r", userBlob.getRadius()}, {"username", userBlob.getUsername()}});
+        response["blobs"].push_back({
+            {"id", userBlob.getId()},
+            {"x", userBlob.getX()},
+            {"y", userBlob.getY()},
+            {"r", userBlob.getRadius()},
+            {"username", userBlob.getUsername()}});
     }
     for(auto &gameBlob : _gameBlobs){
-        response["gameBlobs"].push_back({{"id",gameBlob.getId()},{"x", gameBlob.getX()},{"y", gameBlob.getY()},{"r", gameBlob.getRadius()}});
+        response["gameBlobs"].push_back({
+            {"id",gameBlob.getId()},
+            {"x", gameBlob.getX()},
+            {"y", gameBlob.getY()},
+            {"r", gameBlob.getRadius()}
+        });
     }
     response["messageType"] = "update";
     response["score"] = _scores[payload["id"]];
@@ -111,6 +125,7 @@ void Game::logout(json &payload){
     std::string username = payload["username"];
     std::string socketId = payload["id"];
     int highscore;
+    // Check if obtained highscore is greater than previous
     _db << "select highscore from players where name = ?" << username >> highscore;
     if(highscore < _scores[socketId]){
         _db << "update players set highscore = ?, active = 0 where name = ?" << _scores[socketId] << username;
@@ -124,7 +139,8 @@ void Game::logout(json &payload){
 void Game::createGameBlobs(json &payload) {
     int width = std::stoi(payload["width"].dump());
     int height = std::stoi(payload["height"].dump());
-    for (int i = 0; i < 500; i++) {
+    // Create a fixed number of game blobs with random position x: <-width, width>, y: <-height, height>
+    for (int i = 0; i < GAME_BLOBS_NUMBER; i++) {
         std::string posX = std::to_string(-width + (std::rand() % (2 * width + 1)));
         std::string posY = std::to_string(-height + (std::rand() % (2 * height + 1)));
         _gameBlobs.push_back(*(new Blob(std::to_string(i), posX, posY, "4")));
