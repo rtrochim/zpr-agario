@@ -62,7 +62,6 @@ function setup() {
 
   socket.onopen = () => {
     console.log("[open] Connection established");
-    console.log("Sending to server");
     socket.send(JSON.stringify(data));
   };
 }
@@ -84,7 +83,6 @@ function draw() {
     if (blob.eats(gameBlobs[i])) {
       const data = {
         messageType: "eatGameBlob",
-        blobId: socketId,
         gameBlobId: i,
         id: socketId,
       };

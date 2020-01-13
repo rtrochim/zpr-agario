@@ -6,8 +6,12 @@
 #include "App.h"
 
 int main() {
+    // Initialize database
     database db("../../../../agario.db");
+
     Game game(db);
+
+    // Initialize server, add handler for WebSocket communication and serve static files from directory
     Server server(std::make_shared<PrintfLogger>());
     server.addWebSocketHandler("/", std::make_shared<App>(&server, game));
     server.serve("src/agario", 3000);
