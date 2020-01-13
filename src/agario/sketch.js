@@ -37,7 +37,7 @@ function setup() {
     }
   };
 
-  window.onunload = () => {
+  window.onbeforeunload = () => {
     const data = {
       messageType: 'logout',
       username,
