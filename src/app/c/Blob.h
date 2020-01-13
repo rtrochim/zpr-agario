@@ -25,7 +25,7 @@ public:
     *  @brief Retrieve blob  ID
     *  @return  id  Blob identifier
     ************************************************************/
-    std::string const &getId();
+    std::string const &getId() const;
 
     /**
     *  @brief Set a new ID for the given blob
@@ -38,7 +38,7 @@ public:
     *  @brief Retrieve blob's X coordinate
     *  @return  x  Blob's X coordinate
     ************************************************************/
-    std::string const &getX();
+    std::string const &getX() const;
 
     /**
     *  @brief Set a new X coordinate for the given blob
@@ -51,7 +51,7 @@ public:
     *  @brief Retrieve blob's Y coordinate
     *  @return  y  Blob's Y coordinate
     ************************************************************/
-    std::string const &getY();
+    std::string const &getY() const;
 
     /**
     *  @brief Set a new Y coordinate for the given blob
@@ -64,7 +64,7 @@ public:
     *  @brief Retrieve blob's radius
     *  @return  radius  Blob's radius
     ************************************************************/
-    std::string const &getRadius();
+    std::string const &getRadius() const;
 
     /**
     *  @brief Set a new radius for the given blob

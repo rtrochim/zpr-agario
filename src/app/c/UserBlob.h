@@ -27,7 +27,7 @@ public:
     *  @brief Retrieve username associated with that UserBlob
     *  @return  username  UserBlob's username
     ************************************************************/
-    std::string const &getUsername();
+    std::string const &getUsername() const;
 
     /**
     *  @brief Set a new username for the given UserBlob

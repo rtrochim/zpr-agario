@@ -7,7 +7,7 @@
 
 int main() {
     // Initialize database
-    database db("../../../../agario.db");
+    const database db("../../../../agario.db");
 
     Game game(db);
 
