@@ -25,7 +25,7 @@ public:
     *  @brief Create a Game object with db instance associated with it
     *  @param[in]   db   Reference on a databse instance, that will be storing the state of a given Game
     ************************************************************/
-    explicit Game(database &db);
+    explicit Game(database db);
 
     /**
     *  @brief Get's called upon a user login
@@ -33,7 +33,7 @@ public:
     *  @param[in]   response    JSON object that will be filled with all the data associated with a specific user
     *  @return      void
     ************************************************************/
-    void login(json &payload, json &response);
+    void login(const json &payload, json &response);
 
     /**
     *  @brief Get's called when a user notifies the Game that he's eaten a particular GameBlob
@@ -41,9 +41,9 @@ public:
     *  @param[in]   response    JSON object that will be filled with all the data associated with a specific user
     *  @return      void
     ************************************************************/
-    void eatGameBlob(json &payload, json &response);
+    void eatGameBlob(const json &payload, json &response);
 
-    void update(json &payload, json &response);
+    void update(const json &payload, json &response);
 
     /**
     *  @brief Get's called when a user notifies the Game that he's eaten a particular UserBlob
@@ -51,14 +51,14 @@ public:
     *  @param[in]   response    JSON object that will be filled with all the data associated with a specific user
     *  @return      void
     ************************************************************/
-    void eatUserBlob(json &payload, json &response);
+    void eatUserBlob(const json &payload, json &response);
 
     /**
     *  @brief Get's called right before a user disconnects from the current Game
     *  @param[in]   payload     JSON object containing all necessary user's data, like username and UserBlob's last coordinates
     *  @return      void
     ************************************************************/
-    void logout(json &payload);
+    void logout(const json &payload);
 
 private:
     /**
@@ -66,21 +66,21 @@ private:
     *  @param[in]   payload     JSON object containing width and height of the canvas being used
     *  @return      void
     ************************************************************/
-    void createGameBlobs(json &payload);
+    void createGameBlobs(const json &payload);
 
     /**
     *  @brief Get's called when a registered user tries to log in
     *  @param[in]   payload     JSON object containing user's id and username
     *  @return      int         Highscore of a given user
     ************************************************************/
-    int loginExistingUser(json &payload);
+    int loginExistingUser(const json &payload);
 
     /**
     *  @brief Get's called when a new user tries to log in for the first time
     *  @param[in]   payload     JSON object containing user's id and username
     *  @return      void
     ************************************************************/
-    void createNewUser(json &payload);
+    void createNewUser(const json &payload);
 
     std::vector<UserBlob> _userBlobs; /*!< Vector that stores information about user blobs */
     std::vector<Blob> _gameBlobs; /*!< Vector that stores information about game blobs */

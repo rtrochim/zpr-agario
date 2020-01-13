@@ -8,7 +8,7 @@ void App::onConnect(WebSocket* connection) {
 }
 
 void App::onData(WebSocket* connection, const char* data) {
-    auto payload= json::parse(data); // Incoming data
+    const auto payload= json::parse(data); // Incoming data
     json response; // Outgoing data
     if(payload["messageType"] == "login"){
         _game.login(payload, response);
