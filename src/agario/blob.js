@@ -43,3 +43,5 @@ function Blob(x, y, radius) {
     ellipse(this.position.x, this.position.y, this.radius * 2, this.radius * 2);
   };
 }
+
+module.exports = Blob;

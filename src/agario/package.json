@@ -1,0 +1,24 @@
+{
+  "name": "agar.io-clone",
+  "version": "1.0.0",
+  "description": "Client code for agar.io clone application",
+  "main": "src/blob.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "test": "jest --coverage"
+  },
+  "author": "Dominik Ajlert & Radek Trochimiuk",
+  "license": "ISC",
+  "devDependencies": {
+    "css-loader": "^3.4.2",
+    "html-webpack-plugin": "^3.2.0",
+    "jest": "^24.8.0",
+    "script-loader": "^0.7.2",
+    "style-loader": "^1.1.2",
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  },
+  "dependencies": {
+    "p5": "^0.10.2"
+  }
+}
