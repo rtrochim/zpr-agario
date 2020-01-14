@@ -3,7 +3,7 @@
 #include <memory>
 #include <utility>
 
-Game::Game(database db) : _db(std::move(db)) {}
+Game::Game(database &&db) : _db(std::move(db)) {}
 
 void Game::login(const json &payload, json &response) {
     response["highscore"] = 0;

@@ -6,10 +6,8 @@
 #include "App.h"
 
 int main() {
-    // Initialize database
-    const database db("../../../../agario.db");
-
-    Game game(db);
+    // Initialize game and database
+    Game game(database("../../../../agario.db"));
 
     // Initialize server, add handler for WebSocket communication and serve static files from directory
     Server server(std::make_shared<PrintfLogger>());

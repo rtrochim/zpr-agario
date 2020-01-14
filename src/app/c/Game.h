@@ -25,7 +25,7 @@ public:
     *  @brief Create a Game object with db instance associated with it
     *  @param[in]   db   Reference on a databse instance, that will be storing the state of a given Game
     ************************************************************/
-    explicit Game(database db);
+    explicit Game(database &&db);
 
     /**
     *  @brief Get's called upon a user login
