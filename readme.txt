@@ -23,3 +23,5 @@ Then, simply cd to that directory and open index.html in your favourite browser.
 
 To run frontend (JS) tests, navigate to src/agario/ and type 'yarn' and then yarn test'. That will execute a command for Jest Framework and generate a report with code coverage.
 You should be able to see the coverage right away in your terminal window.
+
+Generating documentation is possible with the help of Doxygen. Just run 'doxygen' in the main folder and everything should be created.
