@@ -8,5 +8,10 @@ This app needs
 - cmake (min 3.3)
 
 For tests:
-- boost
-- lcov
+    backend:
+        - boost
+        - lcov
+    frontend:
+        - nodejs
+        - npm
+        - yarn

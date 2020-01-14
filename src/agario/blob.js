@@ -1,6 +1,6 @@
 const GAME_BLOB_RATIO = 1.5;
 const USER_BLOB_RATIO = 1.5;
-const LEPR_RATIO = 0.2;
+const LERP_RATIO = 0.2;
 const COLOUR_WHITE = 255;
 const BASE_VELOCITY = 3;
 
@@ -12,7 +12,7 @@ function Blob(x, y, radius) {
   this.update = () => {
     const newVelocity = createVector((mouseX - width / 2), (mouseY - height / 2));
     newVelocity.limit(BASE_VELOCITY - (this.radius / 100));
-    this.velocity.lerp(newVelocity, LEPR_RATIO);
+    this.velocity.lerp(newVelocity, LERP_RATIO);
     this.position.add(this.velocity);
   };
 

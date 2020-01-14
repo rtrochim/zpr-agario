@@ -9,3 +9,5 @@ gdb.txt
 .flooignore
 html
 latex
+src/agario/coverage
+src/agario/package-lock.json

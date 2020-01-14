@@ -3,7 +3,6 @@ const MAX_HEIGHT = 900;
 const REFRESH_RATE = 33;
 const BLOB_DEFAULT_RADIUS = 12;
 const DEFAULT_ZOOM = 64;
-const LERP_RATIO = 0.1;
 const STROKE_WEIGHT = 4;
 
 let socket;
@@ -190,8 +189,3 @@ function draw() {
     intervalDate = new Date();
   }
 }
-
-module.exports = {
-  draw,
-  setup,
-};
