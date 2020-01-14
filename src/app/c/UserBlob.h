@@ -7,7 +7,7 @@
  *  @file   UserBlob.h
  *  @brief  Class representing a single UserBlob item on the map, derivative of the Blob class
  *  @author Radek Trochimiuk & Dominik Ajlert
- *  @date   2020-01-01
+ *  @date   2019-12-13
  ***********************************************/
 
 class UserBlob : public Blob {

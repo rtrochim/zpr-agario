@@ -15,7 +15,7 @@ using namespace nlohmann;
  *  @file   Game.h
  *  @brief  Class representing a single game with all of the data & users associated with it
  *  @author Radek Trochimiuk & Dominik Ajlert
- *  @date   2020-01-01
+ *  @date   2019-12-12
  ***********************************************/
 class Game {
 public:
@@ -23,7 +23,7 @@ public:
 
     /**
     *  @brief Create a Game object with db instance associated with it
-    *  @param[in]   db   Reference on a databse instance, that will be storing the state of a given Game
+    *  @param[in]   db   Reference on a database instance, that will be storing the state of a given Game
     ************************************************************/
     explicit Game(database &&db);
 

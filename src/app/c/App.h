@@ -11,7 +11,7 @@ using namespace seasocks;
  *  @file   App.h
  *  @brief  Main Application class for handling socket connections & user data
  *  @author Radek Trochimiuk & Dominik Ajlert
- *  @date   2020-01-01
+ *  @date   2019-12-11
  ***********************************************/
 
 class App : public WebSocket::Handler {
