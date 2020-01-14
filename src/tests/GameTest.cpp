@@ -11,8 +11,7 @@
 
 using namespace nlohmann;
 
-database db("./test.db");
-Game game(db);
+Game game(database("./test.db"));
 
 BOOST_AUTO_TEST_CASE( test_new_user_login )
 {
