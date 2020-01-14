@@ -7,7 +7,7 @@
  *  @file   Blob.h
  *  @brief  Class representing a single Blob item on the map
  *  @author Radek Trochimiuk & Dominik Ajlert
- *  @date   2019-12-12
+ *  @date   2019-11-25
  ***********************************************/
 
 class Blob {
